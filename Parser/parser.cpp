@@ -31,3 +31,57 @@ void Parser::parse(std::string filename){
 
     fin.close();
 }
+
+void Parser::createManifest(std::string filename){
+    std::ofstream fout(filename);
+
+    if(fout.fail()){
+        return;
+    }
+    for(int i = grid->getColumn() - 1; i >= 0; i--){
+        for(int j = 0; j < grid->getRow(); j++){
+            std::string line;
+            Container c = grid->getContainer(i, j);
+            std::string columnIndex = std::to_string(grid->getColumn() - i);
+            std::string column = "";
+            if(i < 10){
+                column.append("0");
+            }
+            column.append(columnIndex);
+
+            std::string rowIndex = std::to_string(j + 1);
+            std::string row = "";
+            if(j < 9){
+                row.append("0");
+            }
+            row.append(rowIndex);
+
+            // add position of container
+            line.append("[");
+            line.append(column);
+            line.append(",");
+            line.append(row);
+            line.append("], ");
+
+            std::string weightAmount = std::to_string(c.weight);
+            int weightLimit = 5 - weightAmount.length();
+
+            std::string weight;
+            for(int i = 0; i < weightLimit; i++){
+                weight.append("0");
+            }
+            weight.append(weightAmount);
+
+            // add weight of container
+            line.append("{");
+            line.append(weight);
+            line.append("}, ");
+
+            line.append(c.name);
+            line.append("\n");
+
+            fout << line;
+        }
+    }
+    fout.close();
+}

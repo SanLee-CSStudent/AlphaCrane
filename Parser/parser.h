@@ -21,7 +21,14 @@ class Parser{
             containerFactory = new ContainerFactory(); 
             this->grid = grid;
         }
+
         void parse(std::string filename);
+        void createManifest(std::string filename);
+
+        ~Parser(){
+            delete containerFactory;
+            delete grid;
+        }
 
     private:
         ContainerFactory* containerFactory;

@@ -16,9 +16,10 @@ class ContainerGrid{
         // getter function
         int getRow(){ return row; }
         int getColumn(){ return column; }
+
         // bottom-left = [column - 1][0]
         // upper-right = [0][row - 1]
-        Container getContainer(int rowIndex, int columnIndex){ return grid[rowIndex][columnIndex]; }
+        Container getContainer(int columnIndex, int rowIndex){ return grid[columnIndex][rowIndex]; }
 
         // mutator function
         void addContainer(int, int, Container);

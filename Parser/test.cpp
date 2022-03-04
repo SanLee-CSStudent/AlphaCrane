@@ -22,10 +22,14 @@ int main(){
     }
 
     testGrid.print();
-    */ 
-    Parser parser = Parser();
+    */
+    ContainerGrid* testGrid = new ContainerGrid(8, 12);
+    Parser parser = Parser(testGrid);
     std::string file = "..//Manifests//ShipCase1.txt";
     parser.parse(file);
+
+    // testGrid->print();
+    parser.createManifest("..//Outputs//manifest.txt");
 
     return 0;
 }
