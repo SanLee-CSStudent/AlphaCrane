@@ -4,32 +4,33 @@
 #include "ContainerGrid.h"
 #include "parser.h"
 
-int main(){
-    /*
-    Container test = Container();
-    test.name = "CONTAINER";
-    test.weight = 0;
+using namespace std;
 
-    // 3 x 2 grid
-    ContainerGrid testGrid = ContainerGrid(3, 2);
-    for(int i = 0; i < 3; i++){
-        for(int j = 0; j < 2; j++){
-            Container t = Container();
-            t.name = "C";
-            t.weight = i + j;
-            testGrid.addContainer(i, j, t);
-        }
-    }
+int main() {
+  Container test = Container();
+  test.name = "CONTAINER";
+  test.weight = 0;
+  cout << "This is running perfectly" << endl;
+  // 3 x 2 grid
+  // ContainerGrid testGrid = ContainerGrid(3, 2);
+  // for (int i = 0; i < 3; i++) {
+  //   for (int j = 0; j < 2; j++) {
+  //     Container t = Container();
+  //     t.name = "C";
+  //     t.weight = i + j;
+  //     testGrid.addContainer(i, j, t);
+  //   }
+  // }
 
-    testGrid.print();
-    */
-    ContainerGrid* testGrid = new ContainerGrid(8, 12);
-    Parser parser = Parser(testGrid);
-    std::string file = "..//Manifests//ShipCase1.txt";
-    parser.parse(file);
+  // testGrid.print();
 
-    // testGrid->print();
-    parser.createManifest("..//Outputs//manifest.txt");
+  ContainerGrid *testGrid = new ContainerGrid(8, 12);
+  Parser parser = Parser(testGrid);
+  std::string file = "..//Manifests//ShipCase1.txt";
+  parser.parse(file);
 
-    return 0;
+  // testGrid->print();
+  parser.createManifest("..//Outputs//manifest.txt");
+
+  return 0;
 }
