@@ -16,6 +16,11 @@ class Parser{
             containerFactory = new ContainerFactory(); 
             grid = new ContainerGrid(8, 12);
         }
+
+        Parser(ContainerGrid* grid){
+            containerFactory = new ContainerFactory(); 
+            this->grid = grid;
+        }
         void parse(std::string filename);
 
     private:
