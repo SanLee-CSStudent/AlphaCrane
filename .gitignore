@@ -1,8 +1,8 @@
 compile_commands.json
 ./build
-./cmake
+.cmake
 .cache
-.clanged
+.clangd
 cmake_install.cmake
 CMakeFiles
 CMakeCache.txt
