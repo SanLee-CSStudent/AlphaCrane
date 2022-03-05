@@ -60,7 +60,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /home/thuanvu/project/AlphaCrane
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/thuanvu/project/AlphaCrane
+CMAKE_BINARY_DIR = /home/thuanvu/project/AlphaCrane/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,14 +87,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/thuanvu/project/AlphaCrane && $(CMAKE_COMMAND) -E cmake_progress_start /home/thuanvu/project/AlphaCrane/CMakeFiles /home/thuanvu/project/AlphaCrane/Logger//CMakeFiles/progress.marks
-	cd /home/thuanvu/project/AlphaCrane && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Logger/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/thuanvu/project/AlphaCrane/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/thuanvu/project/AlphaCrane/build/CMakeFiles /home/thuanvu/project/AlphaCrane/build//CMakeFiles/progress.marks
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/thuanvu/project/AlphaCrane/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/thuanvu/project/AlphaCrane && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Logger/clean
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean
 .PHONY : clean
 
 # The main clean target
@@ -103,56 +103,31 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/thuanvu/project/AlphaCrane && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Logger/preinstall
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/thuanvu/project/AlphaCrane && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Logger/preinstall
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/thuanvu/project/AlphaCrane && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-# Convenience name for target.
-Logger/CMakeFiles/Logger.dir/rule:
-	cd /home/thuanvu/project/AlphaCrane && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Logger/CMakeFiles/Logger.dir/rule
-.PHONY : Logger/CMakeFiles/Logger.dir/rule
+#=============================================================================
+# Target rules for targets named Logger
 
-# Convenience name for target.
-Logger: Logger/CMakeFiles/Logger.dir/rule
+# Build rule for target.
+Logger: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Logger
 .PHONY : Logger
 
 # fast build rule for target.
 Logger/fast:
-	cd /home/thuanvu/project/AlphaCrane && $(MAKE) $(MAKESILENT) -f Logger/CMakeFiles/Logger.dir/build.make Logger/CMakeFiles/Logger.dir/build
+	$(MAKE) $(MAKESILENT) -f Logger/CMakeFiles/Logger.dir/build.make Logger/CMakeFiles/Logger.dir/build
 .PHONY : Logger/fast
-
-Logger.o: Logger.cpp.o
-.PHONY : Logger.o
-
-# target to build an object file
-Logger.cpp.o:
-	cd /home/thuanvu/project/AlphaCrane && $(MAKE) $(MAKESILENT) -f Logger/CMakeFiles/Logger.dir/build.make Logger/CMakeFiles/Logger.dir/Logger.cpp.o
-.PHONY : Logger.cpp.o
-
-Logger.i: Logger.cpp.i
-.PHONY : Logger.i
-
-# target to preprocess a source file
-Logger.cpp.i:
-	cd /home/thuanvu/project/AlphaCrane && $(MAKE) $(MAKESILENT) -f Logger/CMakeFiles/Logger.dir/build.make Logger/CMakeFiles/Logger.dir/Logger.cpp.i
-.PHONY : Logger.cpp.i
-
-Logger.s: Logger.cpp.s
-.PHONY : Logger.s
-
-# target to generate assembly for a file
-Logger.cpp.s:
-	cd /home/thuanvu/project/AlphaCrane && $(MAKE) $(MAKESILENT) -f Logger/CMakeFiles/Logger.dir/build.make Logger/CMakeFiles/Logger.dir/Logger.cpp.s
-.PHONY : Logger.cpp.s
 
 # Help Target
 help:
@@ -163,9 +138,6 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... Logger"
-	@echo "... Logger.o"
-	@echo "... Logger.i"
-	@echo "... Logger.s"
 .PHONY : help
 
 
@@ -177,6 +149,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/thuanvu/project/AlphaCrane && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
