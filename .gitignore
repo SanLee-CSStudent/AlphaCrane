@@ -1,0 +1,8 @@
+.cache
+.cmake
+.clangd
+cmake_install.cmake
+CMakeFiles
+Makefile
+compile_commands.json
+build

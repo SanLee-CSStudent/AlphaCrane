@@ -11,3 +11,4 @@ include_directories(includes)
 project(AlphaCrane)
 
 add_subdirectory(Logger)
+add_subdirectory(GUI)
