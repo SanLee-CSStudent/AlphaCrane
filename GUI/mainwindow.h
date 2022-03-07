@@ -7,7 +7,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <vector>
-
+#include "dialog.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -23,14 +23,23 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 private slots:
-  void on_pushButton_2_clicked();
+  void on_nextButton_clicked();
 
   void on_actionImport_Manifest_triggered();
 
-  void on_pushButton_clicked();
+  void on_doneButton_clicked();
+
+  void on_actionLogin_triggered();
+
+  void acceptLoginDialog(const QString&, const QString&);
+
+  void on_actionLogout_triggered();
 
 private:
+  void Logout();
+  void Login();
   Ui::MainWindow *ui;
+  Dialog* loggin = nullptr;
   int current_step = 0;
   std::vector<QString> steps = {"Step 1: yum", "Step 2: yay"};
 };

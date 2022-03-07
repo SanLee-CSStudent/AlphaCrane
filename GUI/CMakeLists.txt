@@ -20,6 +20,12 @@ set(
   mainwindow.cpp
   mainwindow.h
   mainwindow.ui
+  dialog.h
+  dialog.cpp
+  dialog.ui
+  annotation.h
+  annotation.cpp
+  annotation.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
