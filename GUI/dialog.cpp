@@ -1,6 +1,6 @@
-#include "dialog.h"
 #include <QDebug>
 #include <iostream>
+#include "dialog.h"
 #include "ui_dialog.h"
 
 Dialog::Dialog(QWidget *parent) :
@@ -8,6 +8,7 @@ Dialog::Dialog(QWidget *parent) :
     ui(new Ui::Dialog)
 {
     ui->setupUi(this);
+//    this->setFixedSize(QSize(200, 200));
 }
 
 Dialog::~Dialog()
@@ -19,8 +20,8 @@ void Dialog::on_buttonBox_accepted()
 {
     QString username = ui->username->text();
     QString password = ui->password->text();
-    ui->username->clear();
-    ui->password->clear();
+//    ui->username->clear();
+//    ui->password->clear();
     emit Login(username, password);
 }
 

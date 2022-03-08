@@ -26,6 +26,8 @@ set(
   annotation.h
   annotation.cpp
   annotation.ui
+  containerbutton.h
+  containerbutton.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
