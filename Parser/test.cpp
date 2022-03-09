@@ -28,7 +28,24 @@ int main(){
     std::string file = "..//Manifests//ShipCase1.txt";
     parser.parse(file);
 
-    // testGrid->print();
+    Container c1 = testGrid->getContainer(8- 1, 2 -1);
+    // successfully move container
+    testGrid->moveContainer(c1, 8- 1, 9 -1);
+    // print error message: USED up destination
+    testGrid->moveContainer(c1, 8- 1, 3 -1);
+
+    Container c2 = testGrid->getContainer(8- 1, 1 -1);
+    // print error message: NAN
+    testGrid->moveContainer(c2, 8- 1, 8 -1);
+
+    Container c3 = testGrid->getContainer(8- 1, 2 -1);
+    // print error message: UNUSED
+    testGrid->moveContainer(c3, 8- 1, 8 -1);
+
+    // moved container does not maintain
+    Container c4 = testGrid->getContainer(8- 1, 9 -1);
+    testGrid->moveContainer(c4, 6- 1, 2- 1);
+    testGrid->print();
     parser.createManifest("..//Outputs//manifest.txt");
 
     return 0;
