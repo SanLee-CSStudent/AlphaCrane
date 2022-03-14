@@ -2,11 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QFile>
-#include <QDialog>
-#include <QFileDialog>
-#include <QMessageBox>
+#include <QGridLayout>
 #include <vector>
+
+#include "containerbutton.h"
 #include "annotation.h"
 #include "dialog.h"
 
@@ -41,10 +40,13 @@ private slots:
 
   void on_actionCreate_annotation_triggered();
 
+  void containerSelected(const ContainerButton* button);
+
+  void containerDeselected(const ContainerButton* button);
 
 private:
-  void Logout();
-  void Login();
+  void Login(bool auth);
+  void makeContainerGrid(QWidget* grid, int row, int col, const QSize& buttonSize);
   Ui::MainWindow *ui;
   Dialog* loggin = nullptr;
   Annotation* annotation = nullptr;

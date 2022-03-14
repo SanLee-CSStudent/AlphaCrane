@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 6.0.2, 2022-03-07T20:34:08. -->
+<!-- Written by QtCreator 6.0.2, 2022-03-12T23:22:40. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -83,6 +83,12 @@
     <valuelist type="QVariantList" key="ClangTools.SuppressedDiagnostics"/>
     <value type="bool" key="ClangTools.UseGlobalSettings">true</value>
    </valuemap>
+   <valuemap type="QVariantMap" key="CppEditor.QuickFix">
+    <value type="bool" key="UseGlobalSettings">true</value>
+   </valuemap>
+   <valuelist type="QVariantList" key="ProjectExplorer.Project.Environment">
+    <value type="QString">QT_ASSUME_STDERR_HAS_CONSOLE=1</value>
+   </valuelist>
   </valuemap>
  </data>
  <data>

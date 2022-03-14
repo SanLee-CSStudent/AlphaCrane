@@ -10,9 +10,10 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
+set(QT_ASSUME_STDERR_HAS_CONSOLE 1)
+find_package(QT NAMES Qt6 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
 set(
   PROJECT_SOURCES
@@ -57,6 +58,7 @@ else()
 endif()
 
 target_link_libraries(notepad PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(notepad PRIVATE Qt${QT_VERSION_MAJOR}::Core)
 
 set_target_properties(
   notepad PROPERTIES
