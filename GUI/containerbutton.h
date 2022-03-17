@@ -15,10 +15,10 @@ public:
     int getRow() const;
     int getCol() const;
     void setState(STATE newState);
+    STATE getState() const;
 signals:
     void containerSelected(const ContainerButton* button);
     void containerDeselected(const ContainerButton* button);
-
 public slots:
     void click(bool checked);
     void paintEvent(QPaintEvent* e);

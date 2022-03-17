@@ -3,9 +3,9 @@
 
 #include <string>
 
-struct Container{
-    int weight;
-    std::string name;
+struct Container {
+  int weight;
+  std::string name;
 };
 
 #endif

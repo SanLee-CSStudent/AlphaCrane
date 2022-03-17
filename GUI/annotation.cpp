@@ -1,6 +1,5 @@
 #include "annotation.h"
 #include "ui_annotation.h"
-#include <iostream>
 
 Annotation::Annotation(QWidget *parent) :
     QDialog(parent),
@@ -16,9 +15,9 @@ Annotation::~Annotation()
 
 void Annotation::on_pushButton_clicked()
 {
-    QString text = ui->textEdit->toPlainText();
-    std::cout << text.toStdString() << std::endl;
+    const QString& text = ui->textEdit->toPlainText();
     emit acceptAnnotation(text);
+    ui->textEdit->clear();
     this->close();
 }
 

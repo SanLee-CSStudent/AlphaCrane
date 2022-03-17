@@ -50,6 +50,7 @@ private:
   Ui::MainWindow *ui;
   Dialog* loggin = nullptr;
   Annotation* annotation = nullptr;
+  QString username;
   int current_step = 0;
   std::vector<QString> steps = {"Step 1: yum", "Step 2: yay"};
 };

@@ -8,9 +8,6 @@ using namespace std;
 
 int main() {
   Container test = Container();
-  test.name = "CONTAINER";
-  test.weight = 0;
-  cout << "This is running perfectly" << endl;
   // 3 x 2 grid
   // ContainerGrid testGrid = ContainerGrid(3, 2);
   // for (int i = 0; i < 3; i++) {
@@ -29,7 +26,7 @@ int main() {
   std::string file = "..//Manifests//ShipCase1.txt";
   parser.parse(file);
 
-  // testGrid->print();
+  testGrid->print();
   parser.createManifest("..//Outputs//manifest.txt");
 
   return 0;

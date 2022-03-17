@@ -2,12 +2,12 @@
 #include <QStylePainter>
 #include <QDebug>
 #include <QObject>
-#include <iostream>
 
 ContainerButton::ContainerButton(const QString& innerText, int r, int c, STATE state, QWidget* parent):
     QPushButton(parent), row(r), col(c), state(state)
 {
     setText(innerText);
+    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     setCheckable(true);
     setChecked(false);
     connect(this, &QPushButton::clicked, this, &ContainerButton::click);
@@ -16,6 +16,11 @@ ContainerButton::ContainerButton(const QString& innerText, int r, int c, STATE s
 void ContainerButton::setState(STATE newState){
     state = newState;
 }
+
+ContainerButton::STATE ContainerButton::getState() const {
+    return state;
+}
+
 void ContainerButton::click(bool checked){
     if((this->state == NOTAVAIL) || (this->state == MOVING) || (this->state == EMPTY))
         return;

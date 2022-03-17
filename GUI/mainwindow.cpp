@@ -37,8 +37,6 @@ void MainWindow::makeContainerGrid(QWidget *grid, int rows, int cols, const QSiz
                 currentContainer->setState(ContainerButton::NOTAVAIL);
             if(r < 2)
                 currentContainer->setState(ContainerButton::EMPTY);
-
-            currentContainer->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
             connect(currentContainer, &ContainerButton::containerSelected, this, &MainWindow::containerSelected);
             connect(currentContainer, &ContainerButton::containerDeselected, this, &MainWindow::containerDeselected);
             QGridLayout* layout = (QGridLayout*) grid->layout();
@@ -75,6 +73,7 @@ void MainWindow::acceptLoginDialog(const QString& username, const QString& passw
 }
 
 void MainWindow::acceptAnnotateDialog(const QString& annotation){
+    qDebug() << annotation;
 }
 
 void MainWindow::on_actionImport_Manifest_triggered()
