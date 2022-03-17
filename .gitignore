@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .cache
 .cmake
 .clangd
@@ -6,3 +7,13 @@ CMakeFiles
 Makefile
 compile_commands.json
 build*
+=======
+compile_commands.json
+./build
+.cmake
+.cache
+.clangd
+cmake_install.cmake
+CMakeFiles
+CMakeCache.txt
+>>>>>>> main

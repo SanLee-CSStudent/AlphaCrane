@@ -3,6 +3,7 @@
 
 #include <QPushButton>
 #include <QGridLayout>
+#include <QColor>
 #include <QObject>
 
 class ContainerButton : public QPushButton
@@ -11,6 +12,7 @@ class ContainerButton : public QPushButton
 
 public:
     enum STATE {SELECTED, NOTAVAIL, OCCUPIED, EMPTY, MOVING};
+    const static QColor colors[];
     ContainerButton(const QString&, int row, int col, STATE state, QWidget* = nullptr);
     int getRow() const;
     int getCol() const;
@@ -25,6 +27,7 @@ public slots:
 private:
     int row;
     int col;
+    QColor color;
     STATE state;
 };
 

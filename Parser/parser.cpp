@@ -21,9 +21,17 @@ void Parser::parse(std::string filename) {
     // printing column and row index
     // std::cout << column << " " << row << std::endl;
 
+<<<<<<< HEAD
     int weight = atoi(weightLine.data());
     // printing weight
     // std::cout << weight << std::endl;
+=======
+        int containerColumn = 8 - column;
+        int containerRow = row - 1;
+        Container newContainer = this->containerFactory->create(weight, name, containerColumn, containerRow);
+        this->grid->addContainer(containerColumn, containerRow, newContainer);
+    }
+>>>>>>> main
 
     Container newContainer = this->containerFactory->create(weight, name);
     this->grid->addContainer(8 - column, row - 1, newContainer);

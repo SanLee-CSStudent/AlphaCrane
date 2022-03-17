@@ -3,6 +3,15 @@
 #include <QDebug>
 #include <QObject>
 
+const QColor ContainerButton::colors[] =
+{
+        QColor("red"),
+        QColor("grey"),
+        QColor("lightblue"),
+        QColor("white"),
+        QColor("green")
+};
+
 ContainerButton::ContainerButton(const QString& innerText, int r, int c, STATE state, QWidget* parent):
     QPushButton(parent), row(r), col(c), state(state)
 {
@@ -10,11 +19,14 @@ ContainerButton::ContainerButton(const QString& innerText, int r, int c, STATE s
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     setCheckable(true);
     setChecked(false);
+    this->color = colors[state];
+
     connect(this, &QPushButton::clicked, this, &ContainerButton::click);
 }
 
 void ContainerButton::setState(STATE newState){
     state = newState;
+    this->color = colors[state];
 }
 
 ContainerButton::STATE ContainerButton::getState() const {
@@ -22,38 +34,29 @@ ContainerButton::STATE ContainerButton::getState() const {
 }
 
 void ContainerButton::click(bool checked){
-    if((this->state == NOTAVAIL) || (this->state == MOVING) || (this->state == EMPTY))
+    if((this->state == ContainerButton::NOTAVAIL) ||
+       (this->state == ContainerButton::MOVING)   ||
+       (this->state == ContainerButton::EMPTY))
         return;
-    if(checked){
-        this->state = SELECTED;
+
+    if(checked)
+    {
+        setState(ContainerButton::SELECTED);
         emit containerSelected(this);
-    }else{
-        this->state = OCCUPIED;
+    }
+    else
+    {
+
+        setState(ContainerButton::OCCUPIED);
         emit containerDeselected(this);
     }
+    repaint();
 }
 
 void ContainerButton::paintEvent(QPaintEvent* e){
-    QColor color;
-    switch(state){
-        case SELECTED:
-            color = QColor("red");
-            break;
-        case NOTAVAIL:
-            color = QColor("grey");
-            break;
-        case EMPTY:
-            color = QColor("white");
-            break;
-        case MOVING:
-            color = QColor("green");
-            break;
-        case OCCUPIED:
-            color = QColor("lightblue");
-            break;
-    }
+//    QColor color;
     QStylePainter painter(this);
-    painter.fillRect(rect(), color);
+    painter.fillRect(rect(), this->color);
     painter.drawText(rect(), Qt::AlignCenter, text());
 }
 int ContainerButton::getRow() const {
