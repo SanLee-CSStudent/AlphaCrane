@@ -7,10 +7,8 @@
 class ContainerFactory{
     public:
         ContainerFactory(){ }
-        Container create(int weight, std::string name){
-            Container c = Container();
-            c.weight = weight;
-            c.name = name;
+        Container create(int weight, std::string name, int column, int row){
+            Container c = {weight, name, {column, row}};
 
             return c;
         }

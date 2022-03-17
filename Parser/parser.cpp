@@ -25,8 +25,10 @@ void Parser::parse(std::string filename){
         // printing weight
         // std::cout << weight << std::endl;
 
-        Container newContainer = this->containerFactory->create(weight, name);
-        this->grid->addContainer(8 - column, row - 1, newContainer);
+        int containerColumn = 8 - column;
+        int containerRow = row - 1;
+        Container newContainer = this->containerFactory->create(weight, name, containerColumn, containerRow);
+        this->grid->addContainer(containerColumn, containerRow, newContainer);
     }
 
     fin.close();
