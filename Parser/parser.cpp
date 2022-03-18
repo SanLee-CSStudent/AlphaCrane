@@ -1,22 +1,22 @@
 #include "parser.h"
 
-void Parser::parse(std::string filename){
+void Parser::parse(std::string filename) {
     std::ifstream fin(filename);
 
-    if(fin.fail()){
+    if (fin.fail()) {
         return;
     }
 
     std::string line;
-    while(std::getline(fin, line)){
-        
+    while (std::getline(fin, line)) {
+
         // std::cout << line << std::endl;
         std::string index = line.substr(1, 5);
         std::string weightLine = line.substr(10, 5);
         std::string name = line.substr(18, line.length() - 1);
 
-        int column = atoi(index.substr(0, 2).data());
-        int row = atoi(index.substr(3, 2).data());
+        char column = atoi(index.substr(0, 2).data());
+        char row = atoi(index.substr(3, 2).data());
 
         // printing column and row index
         // std::cout << column << " " << row << std::endl;
@@ -25,8 +25,8 @@ void Parser::parse(std::string filename){
         // printing weight
         // std::cout << weight << std::endl;
 
-        int containerColumn = 8 - column;
-        int containerRow = row - 1;
+        char containerColumn = 8 - column;
+        char containerRow = row - 1;
         Container newContainer = this->containerFactory->create(weight, name, containerColumn, containerRow);
         this->grid->addContainer(containerColumn, containerRow, newContainer);
     }
@@ -34,26 +34,26 @@ void Parser::parse(std::string filename){
     fin.close();
 }
 
-void Parser::createManifest(std::string filename){
+void Parser::createManifest(std::string filename) {
     std::ofstream fout(filename);
 
-    if(fout.fail()){
+    if (fout.fail()) {
         return;
     }
-    for(int i = grid->getColumn() - 1; i >= 0; i--){
-        for(int j = 0; j < grid->getRow(); j++){
+    for (char i = grid->getColumn() - 1; i >= 0; i--) {
+        for (char j = 0; j < grid->getRow(); j++) {
             std::string line;
             Container c = grid->getContainer(i, j);
             std::string columnIndex = std::to_string(grid->getColumn() - i);
             std::string column = "";
-            if(i < 10){
+            if (i < 10) {
                 column.append("0");
             }
             column.append(columnIndex);
 
             std::string rowIndex = std::to_string(j + 1);
             std::string row = "";
-            if(j < 9){
+            if (j < 9) {
                 row.append("0");
             }
             row.append(rowIndex);
@@ -69,7 +69,7 @@ void Parser::createManifest(std::string filename){
             int weightLimit = 5 - weightAmount.length();
 
             std::string weight;
-            for(int i = 0; i < weightLimit; i++){
+            for (int i = 0; i < weightLimit; i++) {
                 weight.append("0");
             }
             weight.append(weightAmount);
@@ -86,4 +86,9 @@ void Parser::createManifest(std::string filename){
         }
     }
     fout.close();
+}
+
+ContainerGrid* Parser::getParseGrid()
+{
+    return this->grid;
 }
