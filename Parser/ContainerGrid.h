@@ -5,84 +5,89 @@
 #include "Container.h"
 #include <iostream>
 
+// CHANGING ALL CHARS TO INTS TO TEST
 class ContainerGrid {
 public:
-    // empty constructor
-    ContainerGrid();
-    ContainerGrid(int, int);
+  // empty constructor
+  ContainerGrid();
+  ContainerGrid(char, char);
 
-    // debugging function
-    void print () const;
+  // debugging function
+  void print();
 
-    // getter function
-    int getRow() const { return row; }
-    int getColumn() const { return column; }
+  // getter function
+  char getRow() { return row; }
+  char getColumn() { return column; }
 
-    // bottom-left = [column - 1][0]
-    // upper-right = [0][row - 1]
-    Container getContainer(int columnIndex, int rowIndex) const { return grid[columnIndex][rowIndex]; }
+  // bottom-left = [column - 1][0]
+  // upper-right = [0][row - 1]
+  Container getContainer(char columnIndex, char rowIndex) {
+    return grid[columnIndex][rowIndex];
+  }
 
-    // mutator function
-    void addContainer(int, int, Container);
-    void moveContainer(Container, int, int);
+  // mutator function
+  void addContainer(char, char, Container);
+  void moveContainer(Container, char, char);
 
-    void emptyContainer(int columnIndex, int rowIndex) {
-        if (isEmpty(columnIndex, rowIndex)) {
-            return;
-        }
-
-        Container* empty = &grid[columnIndex][rowIndex];
-        empty->name = "UNUSED";
-        empty->weight = 0;
+  void emptyContainer(int columnIndex, int rowIndex) {
+    if (isEmpty(columnIndex, rowIndex)) {
+      return;
     }
 
-    ~ContainerGrid() {
-        for (int i = 0; i < column; i++) {
-            delete[] grid[i];
-        }
+    Container *empty = &grid[columnIndex][rowIndex];
+    empty->name = "UNUSED";
+    empty->weight = 0;
+  }
+
+  ~ContainerGrid() {
+    for (char i = 0; i < column; i++) {
+      delete[] grid[i];
     }
+  }
 
 private:
-    int row;
-    int column;
-    Container** grid;
+  char row;
+  char column;
+  Container **grid;
 
-    bool checkIndexRange(int rowIndex, int columnIndex) {
-        if (rowIndex < 0 || rowIndex >= this->row) { return false; }
-        if (columnIndex < 0 || columnIndex >= this->column) { return false; }
-        return true;
+  bool checkIndexRange(char rowIndex, char columnIndex) {
+    if (rowIndex < 0 || rowIndex >= this->row) {
+      return false;
+    }
+    if (columnIndex < 0 || columnIndex >= this->column) {
+      return false;
+    }
+    return true;
+  }
+
+  bool compare(Container c1, Container c2) {
+    if (c1.name == c2.name && c1.weight == c2.weight) {
+      return true;
     }
 
-    bool compare(Container c1, Container c2) {
-        if (c1.name == c2.name &&
-            c1.weight == c2.weight) {
-            return true;
-        }
+    return false;
+  }
 
-        return false;
+  bool checkStatus(char columnIndex, char rowIndex) {
+    if (getContainer(columnIndex, rowIndex).name == "NAN") {
+      // print error message as needed
+      return false;
+    }
+    return true;
+  }
+
+  bool isEmpty(char columnIndex, char rowIndex) {
+    if (grid[columnIndex][rowIndex].name == "UNUSED") {
+      return true;
     }
 
-    bool checkStatus(int columnIndex, int rowIndex) {
-        if (getContainer(columnIndex, rowIndex).name == "NAN") {
-            // print error message as needed
-            return false;
-        }
-        return true;
-    }
+    return false;
+  }
 
-    bool isEmpty(int columnIndex, int rowIndex) {
-        if (grid[columnIndex][rowIndex].name == "UNUSED") {
-            return true;
-        }
-
-        return false;
-    }
-
-    /*
-        EMPTY CONTAINER USED TO BE HERE
-        MOVING TO PUBLIC FUNCTIONS
-    */
-    
+  /*
+      EMPTY CONTAINER USED TO BE HERE
+      MOVING TO PUBLIC FUNCTIONS
+  */
 };
 
 #endif

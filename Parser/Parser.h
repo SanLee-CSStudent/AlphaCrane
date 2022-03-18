@@ -27,7 +27,6 @@ public:
     void createManifest(std::string filename);
 
     ContainerGrid* getParseGrid();
-
     ~Parser() {
         delete containerFactory;
         delete grid;
