@@ -7,9 +7,11 @@ message(${CMAKE_CURRENT_BINARY_DIR})
 message(${CMAKE_BINARY_DIR})
 
 include_directories(includes)
+include_directories(./Parser)
 
 project(AlphaCrane)
 
 add_subdirectory(Logger)
-add_subdirectory(GUI)
 add_subdirectory(Parser)
+add_subdirectory(GUI)
+

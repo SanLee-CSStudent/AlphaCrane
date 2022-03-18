@@ -5,11 +5,15 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QObject>
+#include <QStringList>
 
 #include "containerbutton.h"
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "dialog.h"
+
+// backend includes
+#include "Balance.h"
 
 #define SHIP_ROWS 8
 #define SHIP_COLS 12
@@ -17,14 +21,34 @@
 #define BUFF_COLS 24
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow) {
+    : QMainWindow(parent), ui(new Ui::MainWindow), model(new QStringListModel(this)){
+      parser = new Parser();
       ui->setupUi(this);
-      qDebug() << "Something" << '\n';
-      this->setFixedSize(1200, 900);
+      this->setFixedSize(1500, 900);
       makeContainerGrid(ui->shipWidget, SHIP_ROWS, SHIP_COLS, QSize(82,82));
       makeContainerGrid(ui->bufferWidget, BUFF_ROWS, BUFF_COLS, QSize(40, 40));
       on_actionLogin_triggered();
+      ui->listView->setModel(model);
+      setStep(0);
 }
+struct MoveInfo{
+    QString name;
+    Position from;
+    Position to;
+    static QRegularExpression expression ;
+
+    static MoveInfo Parse(const QString& step_string){
+        QRegularExpressionMatch matches = expression.match(step_string);
+        MoveInfo move;
+        move.name = matches.captured(1);
+        move.from = { matches.captured(2).toInt(), matches.captured(3).toInt() };
+        move.to = { matches.captured(4).toInt(), matches.captured(5), toInt() }
+
+        return move;
+    }
+};
+
+QRegularExpression MoveInfo::expression = QRegularExpression("(\\w+): (\\d),(\\d) -> (\\d),(\\d)");
 
 MainWindow::~MainWindow() { delete ui; }
 
@@ -33,10 +57,6 @@ void MainWindow::makeContainerGrid(QWidget *grid, int rows, int cols, const QSiz
         for(int c = 0; c < cols; c++){
             ContainerButton* currentContainer =
                     new ContainerButton(QString::number(c) + " " + QString::number(r), r, c, ContainerButton::OCCUPIED, grid);
-            if(c-2 < r || -c+2 > r)
-                currentContainer->setState(ContainerButton::NOTAVAIL);
-            if(r < 2)
-                currentContainer->setState(ContainerButton::EMPTY);
             connect(currentContainer, &ContainerButton::containerSelected, this, &MainWindow::containerSelected);
             connect(currentContainer, &ContainerButton::containerDeselected, this, &MainWindow::containerDeselected);
             QGridLayout* layout = (QGridLayout*) grid->layout();
@@ -44,22 +64,41 @@ void MainWindow::makeContainerGrid(QWidget *grid, int rows, int cols, const QSiz
         }
     }
 }
-
+bool MainWindow::buttonFromShip(const ContainerButton* button){
+    return button->parentWidget() == ui->shipWidget;
+}
 void MainWindow::containerSelected(const ContainerButton* button){
-    qDebug() << button->getRow() << " " << button->getCol() << " Selected" << '\n';
+    Position p = {button->getCol(), button->getRow()};
+    unloadContainer.insert(p);
 }
 
 void MainWindow::containerDeselected(const ContainerButton* button){
-    qDebug() << button->getRow() << " " << button->getCol() << " Deselected" << '\n';
+    Position p = {button->getCol(), button->getRow()};
+    unloadContainer.erase(p);
 }
-
+void MainWindow::setStep(int next_step = 0) const{
+    ui->listView->selectionModel()->clear();
+    QModelIndex currentIndex = model->index(next_step, 0);
+    ui->listView->selectionModel()->select(currentIndex, QItemSelectionModel::Select);
+}
 void MainWindow::on_nextButton_clicked()
 {
-    current_step += 1;
-    if(current_step == steps.size() - 1) {
+    current_step++;
+
+    if(current_step == model->stringList().size()) {
         ui->nextButton->setDisabled(true);
         ui->doneButton->setEnabled(true);
+        return;
     }
+    setStep(current_step);
+    DisplayNextMove();
+
+}
+void MainWindow::DisplayNextMove() const{
+    QString current_step_string = model->stringList().at(current_step);
+    qDebug() << current_step_string;
+    MoveInfo move = MoveInfo::Parse(current_step_string);
+    qDebug() << "Next move:" << move.name << "|" << move.from.col << move.from.row << "|" << move.to.col << move.to.row;
 }
 void MainWindow::Login(bool auth){
     ui->actionImport_Manifest->setEnabled(auth);
@@ -69,52 +108,90 @@ void MainWindow::Login(bool auth){
 }
 
 void MainWindow::acceptLoginDialog(const QString& username, const QString& password){
-    Login(username=="Admin" && password =="Password");
+    Login(true);
 }
 
 void MainWindow::acceptAnnotateDialog(const QString& annotation){
     qDebug() << annotation;
 }
 
-void MainWindow::on_actionImport_Manifest_triggered()
+void MainWindow::acceptLoadContainer(const QString & name, const QString & weight)
 {
-    QString next_file = QFileDialog::getOpenFileName(this, "Import the manifest");
-    if(next_file != ""){
-        QFile file(next_file);
-        QFileInfo file_info(file);
-        ui->label->setText(file_info.baseName());
-    }else{
-        ui->label->setText(QString("No manifest imported"));
-    }
+    qDebug() << name << " " << weight;
 }
 
+ContainerButton* MainWindow::GetContainerButton(int col, int row) const{
+    QGridLayout* layout = qobject_cast<QGridLayout*>(ui->shipWidget->layout());
+    return qobject_cast<ContainerButton*>(layout->itemAtPosition(col, row)->widget());
+}
+
+void MainWindow::on_actionImport_Manifest_triggered()
+{
+    QString file_name = QFileDialog::getOpenFileName(this, "Import the manifest");
+    if(file_name == "")
+        return;
+
+    QFile file(file_name);
+    QFileInfo file_info(file);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text ))
+    {
+        qDebug() << "Can't open manifest file";
+    }
+    parser->parse(file_name.toStdString());
+    ContainerGrid* containerGrid = parser->getParseGrid();
+
+    for(uint32_t r = 0; r < containerGrid->getRow(); ++r){
+        for(uint32_t c = 0; c < containerGrid->getColumn(); ++c)
+        {
+            Container currentContainer = containerGrid->getContainer(c, r);
+            ContainerButton* currentContainerButton = GetContainerButton(c, r);
+            std::string name = currentContainer.name;
+            QString newText = QString::number(r) + " " + QString::number(c);
+            if(name == "UNUSED"){
+                currentContainerButton->setState(ContainerButton::EMPTY);
+            }else if(name == "NAN"){
+                currentContainerButton->setState(ContainerButton::NOTAVAIL);
+            }else{
+                newText = QString::fromStdString(name);
+                currentContainerButton->setState(ContainerButton::OCCUPIED);
+            }
+            currentContainerButton->setText(newText);
+        }
+    }
+    model->setStringList(QStringList());
+    setStep(0);
+    ui->label->setText(file_info.baseName());
+}
 
 void MainWindow::on_doneButton_clicked()
 {
+    ui->pushButton->setEnabled(true);
+    model->setStringList(QStringList());
     QMessageBox::information(this, "REMINDER", "Please send manifest to ship!");
 }
-
-
-void MainWindow::on_actionLogin_triggered()
-{
-    if(loggin == nullptr){
-        loggin = new Dialog(this);
-        loggin->setModal(true);
-        connect(loggin,
-                &Dialog::Login,
-                this,
-                &MainWindow::acceptLoginDialog);
-    }
-    loggin->exec();
-
-}
-
 
 void MainWindow::on_actionLogout_triggered()
 {
     Login(false);
 }
 
+void MainWindow::on_pushButton_clicked()
+{
+    QStringList list;
+    if (unloadContainer.empty())
+        return;
+    // Get String List
+//    for(Position p : unloadContainer){
+//        list << QString::number(p.col) + " " + QString::number(p.row);
+//    }
+    list << "Cat: 1,2 -> 3,4";
+    list << "Dog: 3,4 -> 4,5";
+    model->setStringList(list);
+    current_step = 0;
+    setStep(current_step);
+    DisplayNextMove();
+    ui->pushButton->setDisabled(true);
+}
 
 void MainWindow::on_actionCreate_annotation_triggered()
 {
@@ -127,6 +204,31 @@ void MainWindow::on_actionCreate_annotation_triggered()
                 &MainWindow::acceptAnnotateDialog);
     }
     annotation->exec();
+}
 
+void MainWindow::on_actionLogin_triggered()
+{
+    if(loggin == nullptr){
+        loggin = new Dialog(this);
+        loggin->setModal(true);
+        connect(loggin,
+                &Dialog::Login,
+                this,
+                &MainWindow::acceptLoginDialog);
+    }
+    loggin->exec();
+}
+
+void MainWindow::on_actionLoad_container_triggered()
+{
+    if(loadcontainer == nullptr){
+        loadcontainer = new LoadContainer();
+        loadcontainer->setModal(true);
+        connect(loadcontainer,
+                &LoadContainer::Load,
+                this,
+                &MainWindow::acceptLoadContainer);
+    }
+    loadcontainer->exec();
 }
 

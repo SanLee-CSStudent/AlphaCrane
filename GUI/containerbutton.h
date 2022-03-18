@@ -4,7 +4,6 @@
 #include <QPushButton>
 #include <QGridLayout>
 #include <QColor>
-#include <QObject>
 
 class ContainerButton : public QPushButton
 {

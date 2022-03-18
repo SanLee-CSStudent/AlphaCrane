@@ -1,7 +1,6 @@
 #include "containerbutton.h"
 #include <QStylePainter>
 #include <QDebug>
-#include <QObject>
 
 const QColor ContainerButton::colors[] =
 {
@@ -25,8 +24,11 @@ ContainerButton::ContainerButton(const QString& innerText, int r, int c, STATE s
 }
 
 void ContainerButton::setState(STATE newState){
+    if(state == newState)
+          return;
     state = newState;
     this->color = colors[state];
+    repaint();
 }
 
 ContainerButton::STATE ContainerButton::getState() const {
@@ -37,7 +39,7 @@ void ContainerButton::click(bool checked){
     if((this->state == ContainerButton::NOTAVAIL) ||
        (this->state == ContainerButton::MOVING)   ||
        (this->state == ContainerButton::EMPTY))
-        return;
+            return;
 
     if(checked)
     {
@@ -46,7 +48,6 @@ void ContainerButton::click(bool checked){
     }
     else
     {
-
         setState(ContainerButton::OCCUPIED);
         emit containerDeselected(this);
     }
@@ -54,7 +55,6 @@ void ContainerButton::click(bool checked){
 }
 
 void ContainerButton::paintEvent(QPaintEvent* e){
-//    QColor color;
     QStylePainter painter(this);
     painter.fillRect(rect(), this->color);
     painter.drawText(rect(), Qt::AlignCenter, text());

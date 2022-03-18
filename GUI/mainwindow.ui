@@ -82,6 +82,26 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::NoSelection</enum>
+        </property>
        </widget>
       </item>
       <item>
@@ -198,7 +218,7 @@
          <item>
           <widget class="QPushButton" name="pushButton">
            <property name="text">
-            <string>Execute</string>
+            <string>Unload</string>
            </property>
           </widget>
          </item>
@@ -259,9 +279,16 @@
     </property>
     <addaction name="actionCreate_annotation"/>
    </widget>
+   <widget class="QMenu" name="menuLoad">
+    <property name="title">
+     <string>Load</string>
+    </property>
+    <addaction name="actionLoad_container"/>
+   </widget>
    <addaction name="menuFIle"/>
    <addaction name="menuHelp"/>
    <addaction name="menuAnnotation"/>
+   <addaction name="menuLoad"/>
   </widget>
   <action name="actionImport_Manifest">
    <property name="enabled">
@@ -295,6 +322,11 @@
    </property>
    <property name="text">
     <string>Logout</string>
+   </property>
+  </action>
+  <action name="actionLoad_container">
+   <property name="text">
+    <string>Load container</string>
    </property>
   </action>
  </widget>
