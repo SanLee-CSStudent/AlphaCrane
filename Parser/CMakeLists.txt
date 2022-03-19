@@ -5,7 +5,7 @@ set(BALANCE_SOURCE Balance.cpp Balance.h)
 set(CONTAINERGRID_SOURCE ContainerGrid.cpp ContainerGrid.h)
 set(NODE_SOURCE Node.cpp Node.h)
 set(PARSER_SOURCE Parser.cpp Parser.h)
-set(SOLVER_SOURCE Solver.cpp Solver.h)
+set(SOLVER_SOURCE Solver.cpp Solver.h Point.h)
 
 add_library(Balance STATIC ${BALANCE_SOURCE} ${NODE_SOURCE})
 add_library(ContainerGrid STATIC ${CONTAINERGRID_SOURCE})

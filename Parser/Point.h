@@ -8,6 +8,10 @@ struct Point {
     char column;
     // defines index in horizontal order in 2d array
     char row;
+
+    bool operator==(Point p2){
+        return column == p2.column && row == p2.row;
+    }
 };
 
 #endif

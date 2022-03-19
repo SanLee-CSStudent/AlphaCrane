@@ -19,11 +19,11 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
-struct Position {
+struct MoveInfo;
+struct Position{
     int col;
     int row;
 };
-struct MoveInfo;
 
 struct PositionComp {
     bool operator() (const Position& p1, const Position& p2) const

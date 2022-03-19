@@ -32,9 +32,13 @@ MainWindow::MainWindow(QWidget *parent)
       ui->listView->setModel(model);
       setStep(0);
 }
+bool operator==(Position p1, Position p2){
+    return p1.col == p2.col && p2.row == p1.row;
+}
 QString getDate(){
     return QDateTime::currentDateTime().toString("MM DD YYYY: h:m:s ");
 }
+
 struct MoveInfo{
     QString name;
     Position from;
@@ -60,7 +64,7 @@ void MainWindow::makeContainerGrid(QWidget *grid, int rows, int cols, const QSiz
     for(int r = 0; r < rows; r++){
         for(int c = 0; c < cols; c++){
             ContainerButton* currentContainer =
-                    new ContainerButton(QString::number(r) + " " + QString::number(c), r, c, ContainerButton::OCCUPIED, grid);
+                    new ContainerButton(QString::number(r) + " " + QString::number(c), r, c, ContainerButton::NOTAVAIL, grid);
             connect(currentContainer, &ContainerButton::containerSelected, this, &MainWindow::containerSelected);
             connect(currentContainer, &ContainerButton::containerDeselected, this, &MainWindow::containerDeselected);
             QGridLayout* layout = (QGridLayout*) grid->layout();
@@ -72,12 +76,12 @@ bool MainWindow::buttonFromShip(const ContainerButton* button){
     return button->parentWidget() == ui->shipWidget;
 }
 void MainWindow::containerSelected(const ContainerButton* button){
-    Position p = {button->getRow(), button->getCol()};
+    Position p = { button->getRow(), button->getCol()};
     unloadContainer.insert(p);
 }
 
 void MainWindow::containerDeselected(const ContainerButton* button){
-    Position p = {button->getRow(), button->getCol()};
+    Position p = { button->getRow(), button->getCol()};
     unloadContainer.erase(p);
 }
 void MainWindow::setStep(int next_step = 0) const{
@@ -89,11 +93,18 @@ void MainWindow::setStep(int next_step = 0) const{
 void MainWindow::MoveContainer(MoveInfo move) const{
     stringstream ss;
 
-    if (move.from.col == move.to.col && move.from.row == move.to.row){
+    if (move.to == move.from){
         ContainerButton* containerButton = GetContainerButton(move.from.col, move.from.row);
         ss << move.from.row << " " << move.from.col;
         containerButton->setText(QString::fromStdString(ss.str()));
         containerButton->setState(ContainerButton::EMPTY);
+        return;
+    }
+    if (move.from.col == 0 && move.from.row == 0){
+        ContainerButton* containerButton = GetContainerButton(move.to.col, move.to.row);
+        ss << move.to.row << " " << move.to.col;
+        containerButton->setText(move.name);
+        containerButton->setState(ContainerButton::OCCUPIED);
         return;
     }
     ContainerButton* containerButton = GetContainerButton(move.from.col, move.from.row);
@@ -107,13 +118,27 @@ void MainWindow::MoveContainer(MoveInfo move) const{
 }
 void MainWindow::on_nextButton_clicked()
 {
+    if(model->stringList().empty()){
+        return;
+    }
     MoveInfo move = MoveInfo::Parse(model->stringList().at(current_step));
     MoveContainer(move);
     qDebug() << getDate() << model->stringList().at(current_step);
     current_step++;
     Container prev = parser->getParseGrid()->getContainer(move.from.col, move.from.row);
-    parser->getParseGrid()->moveContainer(prev, move.to.col, move.to.row);
-    unloadContainer.erase(move.from);
+
+    if (move.to == move.from ){
+        qDebug() << getDate() << move.name << " is " << "offloaded";
+        parser->getParseGrid()->emptyContainer(move.from.col, move.from.row);
+        unloadContainer.erase(move.from);
+    }else if(move.from.col == 0 && move.from.row == 0){
+        qDebug() << getDate() << move.name << " is " << "onloaded";
+        Container c = {0, move.name.toStdString(), {char(move.to.col), char(move.to.row)}};
+        parser->getParseGrid()->addContainer(move.to.col, move.to.row, c);
+        parser->getParseGrid()->print();
+    }else{
+        parser->getParseGrid()->moveContainer(prev, move.to.col, move.to.row);
+    }
     if(current_step == model->stringList().size()) {
         unloadContainer.clear();
         ui->nextButton->setDisabled(true);
@@ -137,7 +162,8 @@ void MainWindow::Login(bool auth){
 }
 
 void MainWindow::acceptLoginDialog(const QString& username, const QString& password){
-    qDebug() << getDate() << username << " signs in";
+    if(username == "Admin")
+        qDebug() << getDate() << username << " signs in";
     Login(true);
 }
 
@@ -148,6 +174,8 @@ void MainWindow::acceptAnnotateDialog(const QString& annotation){
 void MainWindow::acceptLoadContainer(const QString & name, const QString & weight)
 {
     Container c = {weight.toInt(), name.toStdString() , {0, 0}};
+    ui->doneButton->setDisabled(true);
+    ui->nextButton->setEnabled(true);
     vector<Container> load;
     load.push_back(c);
     vector<string> solution = Load(load, parser->getParseGrid());
@@ -168,9 +196,9 @@ void MainWindow::acceptLoadContainer(const QString & name, const QString & weigh
     ui->pushButton->setDisabled(true);
 }
 
-ContainerButton* MainWindow::GetContainerButton(int col, int row) const{
+ContainerButton* MainWindow::GetContainerButton(int column, int row) const{
     QGridLayout* layout = qobject_cast<QGridLayout*>(ui->shipWidget->layout());
-    return qobject_cast<ContainerButton*>(layout->itemAtPosition(col, row)->widget());
+    return qobject_cast<ContainerButton*>(layout->itemAtPosition(column, row)->widget());
 }
 
 void MainWindow::on_actionImport_Manifest_triggered()
@@ -183,10 +211,11 @@ void MainWindow::on_actionImport_Manifest_triggered()
     QFileInfo file_info(file);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text ))
     {
-        qDebug() << "Can't open manifest file";
+        qDebug() << getDate() << "Can't open manifest file";
     }
     parser->parse(file_name.toStdString());
     ContainerGrid* containerGrid = parser->getParseGrid();
+    qDebug() << getDate() << "Manifest " << file_name << "opened";
 
     for(uint32_t r = 0; r < containerGrid->getRow(); ++r){
         for(uint32_t c = 0; c < containerGrid->getColumn(); ++c)
@@ -216,6 +245,7 @@ void MainWindow::on_doneButton_clicked()
     ui->pushButton->setEnabled(true);
     ui->nextButton->setEnabled(true);
     ui->actionBalance->setEnabled(true);
+    ui->doneButton->setDisabled(true);
     std::string outfile = "/home/thuanvu/" + ui->label->text().toStdString() + "_OUTBOUND.txt";
 
     qDebug() << getDate() << "Finished a Cycle. Manifest " << QString::fromStdString(outfile) << "written to desktop" <<
@@ -236,7 +266,7 @@ void MainWindow::on_pushButton_clicked()
 {
     QStringList list;
     if (unloadContainer.empty()){
-        qDebug() << "No selection made";
+        QMessageBox::information(this, "NO SELECTION", "No selection made yet!");
         return;
     }
     vector<Container> unload;
@@ -246,7 +276,7 @@ void MainWindow::on_pushButton_clicked()
     }
     vector<string> solution = Unload(unload, parser->getParseGrid());
     if(solution.empty()) {
-        qDebug() << "no solution";
+        qDebug() << "[ERROR]" << getDate()<< "No solution found.";
         return;
     }
     for(string s : solution){
@@ -256,6 +286,7 @@ void MainWindow::on_pushButton_clicked()
     model->setStringList(list);
     current_step = 0;
     MoveInfo move = MoveInfo::Parse(model->stringList().at(current_step));
+    qDebug() << move.name << move.to.col << move.to.row;
     setStep(current_step);
     DisplayNextMove(move);
     ui->pushButton->setDisabled(true);

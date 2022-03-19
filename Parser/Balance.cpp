@@ -40,10 +40,6 @@ Node* Balance::aStarSearch(char mode)
 		{
 			if (goalQueue.empty())
 			{
-				chrono::time_point<chrono::system_clock> endTime = chrono::system_clock::now();
-				chrono::duration<double> elapsed_seconds = endTime - startTime;
-                cout << "Total time spent trying: " << elapsed_seconds.count() << " seconds." << endl;
-                cout << "The system will now perform SIFT to balance the ship..." << endl << endl;
 				mode = 1;
 				this->exploredSet.clear();
 				while(aStarFrontier.size() > 0)
@@ -58,12 +54,6 @@ Node* Balance::aStarSearch(char mode)
 			}
 			else
 			{
-				cout << endl << "The goal state has been found!" << endl;
-				goalQueue.top()->getData()->print();
-				cout << endl << "The total minute cost was: " << +goalQueue.top()->getMinuteCost() << endl;
-				chrono::time_point<chrono::system_clock> endTime = chrono::system_clock::now();
-				chrono::duration<double> elapsed_seconds = endTime - startTime;
-				cout << "The search took " << elapsed_seconds.count() << "seconds." << endl;
 				return goalQueue.top();
 			}
 			
@@ -78,10 +68,6 @@ Node* Balance::aStarSearch(char mode)
 
 		if (!(goalQueue.empty()) && goalQueue.top()->getDepth() < curr->getDepth()) //if there has been a goal found with a lower cost than the lowest cost node in the frontier (goalQueueCost < currCost??)
 		{
-			cout << endl << "The total minute cost was: " << +goalQueue.top()->getMinuteCost() << endl;
-			chrono::time_point<chrono::system_clock> endTime = chrono::system_clock::now();
-			chrono::duration<double> elapsed_seconds = endTime - startTime;
-			cout << "The search took " << elapsed_seconds.count() << "seconds." << endl;
  			return goalQueue.top();
 		}
 
@@ -178,14 +164,5 @@ Node* Balance::aStarSearch(char mode)
 	}
 	this->maxQueueSize = maxQueueSize;
 	this->numExplored = numExplored;
-	if (!goalQueue.empty())
-	{
-		cout << endl << "The goal state has been found!" << endl;
-		goalQueue.top()->getData()->print();
-		cout << endl << "The total minute cost was: " << +goalQueue.top()->getMinuteCost() << endl;
-		chrono::time_point<chrono::system_clock> endTime = chrono::system_clock::now();
-		chrono::duration<double> elapsed_seconds = endTime - startTime;
-		cout << "The search took " << elapsed_seconds.count() << "seconds." << endl;
-	}
 	return goalQueue.top(); //returns the goal with the least total cost found (sometimes returns top of goal queue without there being any added)
 }

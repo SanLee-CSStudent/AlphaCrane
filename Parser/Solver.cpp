@@ -92,6 +92,7 @@ vector<string> Unload(vector<Container> unload,
     if (nextNode == nullptr)
       break;
     MoveInfo mi = GetMoveInfo(currentNode, nextNode);
+
     ss << mi.name << ": " << mi.from_to;
     vec_string.push_back(ss.str());
     ss.str("");
@@ -138,6 +139,7 @@ vector<string> Load(vector<Container> load, ContainerGrid *parserGrid) {
     if (nextNode == nullptr)
       break;
     MoveInfo mi = GetMoveInfo(currentNode, nextNode);
+
     ss << mi.name << ": " << mi.from_to;
     vec_string.push_back(ss.str());
     ss.str("");
