@@ -360,7 +360,7 @@ void Node::createMovesChildren()
 					mDist = 17 + tempBufferRDist + tempBufferCDist + tempShipRDist + tempShipCDist; //17 because 15 mins(flat time) plus 1 dist for virtual node, update later
 					child->transferContainer(true, unusedBufferLoc, originalLoc, containers.at(i));					child->minuteCost += mDist;
 					child->calcMovesCost();
-					child->unloadContainers.erase(child->unloadContainers.begin() + j); //erases the moved container from child's loadContainers
+					child->unloadContainers.erase(child->unloadContainers.begin() + i); //erases the moved container from child's loadContainers
 					this->children.push_back(child);
 				}
 			}
@@ -377,7 +377,7 @@ void Node::createMovesChildren()
 					child->data->addContainer(get<0>(unusedShipLoc), get<1>(unusedShipLoc), loadContainers.at(i)); //loaded container doesn't actually come from buffer?
 					child->minuteCost += mDist;
 					child->calcMovesCost();
-					child->loadContainers.erase(child->loadContainers.begin() + j); //erases the moved container from child's loadContainers
+					child->loadContainers.erase(child->loadContainers.begin() + i); //erases the moved container from child's loadContainers (CHANGED TO I)
 					this->children.push_back(child);
 				}
 			}
@@ -716,11 +716,12 @@ void Node::calcMovesCost()
 	bool foundContainer = false;
 	for (int i = 0; i < this->loadContainers.size(); i++)
 	{
+		foundContainer = false;
 		for (int row = 0; row < this->data->getRow(); row++)
 		{
 			for (int col = 0; col < this->data->getColumn(); col++)
 			{
-				if (this->data->getContainer(col, row).name == loadContainers.at(i).name && this->data->getContainer(col, row).weight == loadContainers.at(i).weight)
+				if (this->data->getContainer(col, row).name == this->loadContainers.at(i).name && this->data->getContainer(col, row).weight == this->loadContainers.at(i).weight)
 				{
 					foundContainer = true;
 					break;
@@ -741,6 +742,7 @@ void Node::calcMovesCost()
 	foundContainer = false;
 	for (int i = 0; i < this->unloadContainers.size(); i++)
 	{
+		foundContainer = false;
 		for (int row = 0; row < this->data->getRow(); row++)
 		{
 			for (int col = 0; col < this->data->getColumn(); col++)
