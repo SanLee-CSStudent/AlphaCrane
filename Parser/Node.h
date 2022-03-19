@@ -3,7 +3,7 @@
 #include <string>
 #include <tuple>
 #include <algorithm>
-#include "ContainerGrid.h"
+#include "../Parser/ContainerGrid.h"
 using namespace std;
 
 class Node
@@ -12,20 +12,20 @@ private:
 	ContainerGrid* data;
 	ContainerGrid* goalState;
 	ContainerGrid* buffer;
-	double cost;
-	double hCost;
-	double gCost;
-	double minuteCost;
-	int depth;
+	char cost;
+	char hCost;
+	char gCost;
+	char minuteCost;
+	char depth;
 	Node* parent;
 	vector<Node*> children;
 	int numChildren;
-	vector<tuple<int, int>> unusedBufferLocations;
-	vector<tuple<int, int>>  unusedShipLocations;
+	vector<tuple<char, char>> unusedBufferLocations;
+	vector<tuple<char, char>>  unusedShipLocations;
 public:
 	Node();
 	Node(Node* parent, ContainerGrid* data, ContainerGrid* goalState, ContainerGrid* buffer);
-	
+	~Node();
 
 	//mutator functions
 	void createBalanceChildren(); //creates a child for every container being switched to the other side
@@ -39,26 +39,27 @@ public:
 	void setParent(Node* parent);
 	void setDepth();
 	void createSIFTGoal();
-	void createMovesGoal();
-	void transferContainer(bool destination, tuple<int,int>destCoords, tuple<int,int> originalCoords, Container c); //moves container from ship to buffer or from buffer to ship. destination == 0: to buffer
+	void createMovesGoal(vector<Container> loadContainers, vector<Container> unloadContainers);
+	void transferContainer(bool destination, tuple<char, char>destCoords, tuple<char, char> originalCoords, Container c); //moves container from ship to buffer or from buffer to ship. destination == 0: to buffer
 
 	//helper functions
 	ContainerGrid* copyData(ContainerGrid* data);
 	int getNumChildren();
-	int getDepth();
-	tuple<int,int> getNearestBalanceLoc(int originalRow); //helper function to return nearest available row on the other side
-	tuple<int, int> getNearestBufferLoc(int originalRow);
-	tuple<int, int> findGoalContainer(Container c); //function that finds where the Container (passed thru parameter) is in the goal state
+	char getDepth();
+	tuple<char, char> getNearestBalanceLoc(char originalRow); //helper function to return nearest available row on the other side
+	tuple<char, char> getNearestBufferLoc();
+	tuple<char, char> findGoalContainer(Container c); //function that finds where the Container (passed thru parameter) is in the goal state
 	void generatePossibleShipMoves(); //generates all of the possible ship slots that a container can be moved to
 	void generatePossibleBufferMoves(); //generates all of the possible buffer slots that a container can be moved to
-
+	void clearChildren();
 	//accessor/information functions
-	double getCost();
-	double getHCost();
-	double getGCost();
-	double getMinuteCost();
+	char getCost();
+	char getHCost();
+	char getGCost();
+	char getMinuteCost();
 	bool isBalanced();
 	ContainerGrid* getData();
+	ContainerGrid* getBuffer();
 	Node* getParent(); //returns the parent node of this node
 	Node* getChild(int i); //returns child at ith index
 };

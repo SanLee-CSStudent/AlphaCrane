@@ -1,12 +1,8 @@
 #include "Balance.h"
-#include "Container.h"
-#include "ContainerGrid.h"
 #include "Node.h"
-#include "Parser.h"
-#include <fstream>
-#include <iostream>
+
+#include <sstream>
 #include <stack>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -17,7 +13,7 @@ ostream &operator<<(ostream &out, Point point) {
   return out;
 }
 ostream &operator<<(ostream &out, pair<Point, Point> from_to) {
-  out << from_to.first << "->" << from_to.second << endl;
+  out << from_to.first << " -> " << from_to.second << endl;
   return out;
 }
 
@@ -25,6 +21,7 @@ struct MoveInfo {
   string name;
   pair<Point, Point> from_to;
 };
+
 MoveInfo GetMoveInfo(Node *from, Node *to) {
   ContainerGrid *from_grid = from->getData();
   ContainerGrid *to_grid = to->getData();
@@ -55,7 +52,7 @@ MoveInfo GetMoveInfo(Node *from, Node *to) {
   }
   return mI;
 }
-int main() {
+vector<string> Solve(ContainerGrid *parserGrid) {
   ContainerGrid *testGrid = new ContainerGrid(8, 12);
   ContainerGrid *goalGrid = new ContainerGrid(8, 12);
   ContainerGrid *bufferGrid = new ContainerGrid(4, 24);
@@ -69,22 +66,10 @@ int main() {
     }
   }
 
-  Parser parser = Parser(testGrid);
-  string file = "/home/thuanvu/project/AlphaCrane/ShipCases/"
-                "ShipCase2.txt";
-  parser.parse(file);
-
   Node *startNode =
-      new Node(nullptr, parser.getParseGrid(), goalGrid,
+      new Node(nullptr, parserGrid, goalGrid,
                bufferGrid); // initialize blank goal state and buffer
-  cout << "We are asked to balance the following ship: " << endl;
-  startNode->getData()->print();
-  cout << endl << endl;
   startNode->calcBalanceCost();
-  cout << endl << "startNode size is: " << sizeof(*startNode) << endl;
-  cout << "It has a starting cost of: " << startNode->getCost()
-       << " with an gCost of: " << startNode->getGCost()
-       << " and an hCost of: " << startNode->getHCost() << endl;
   Balance *balance = new Balance(startNode);
   Node *solution = balance->aStarSearch();
   stack<Node *> trace;
@@ -95,18 +80,19 @@ int main() {
   }
 
   trace.push(solution);
-  cout << endl << endl << endl << "Now printing trace: " << endl << endl;
+  vector<string> vec_string;
+  stringstream ss;
   while (trace.size() > 1) {
     Node *currentNode = trace.top();
     trace.pop();
     Node *nextNode = trace.top();
-    currentNode->getData()->print();
     if (nextNode == nullptr)
       break;
-    cout << nextNode << " " << currentNode << endl;
     MoveInfo mi = GetMoveInfo(currentNode, nextNode);
-    cout << mi.name << " " << mi.from_to << std::endl;
+    ss << mi.name << ": " << mi.from_to;
+    vec_string.push_back(ss.str());
+    ss.str("");
   }
 
-  return 0;
+  return vec_string;
 }

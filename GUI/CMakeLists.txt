@@ -63,7 +63,7 @@ endif()
 
 target_link_libraries(GUI PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_link_libraries(GUI PRIVATE Qt${QT_VERSION_MAJOR}::Core)
-target_link_libraries(GUI PRIVATE Parser ContainerGrid Balance)
+target_link_libraries(GUI PRIVATE Solver)
 set_target_properties(
   GUI PROPERTIES
   MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

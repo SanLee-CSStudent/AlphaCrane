@@ -12,8 +12,8 @@
 #include "./ui_mainwindow.h"
 #include "dialog.h"
 
-// backend includes
 #include "Balance.h"
+#include "Solver.h"
 
 #define SHIP_ROWS 8
 #define SHIP_COLS 12
@@ -42,7 +42,7 @@ struct MoveInfo{
         MoveInfo move;
         move.name = matches.captured(1);
         move.from = { matches.captured(2).toInt(), matches.captured(3).toInt() };
-        move.to = { matches.captured(4).toInt(), matches.captured(5), toInt() }
+        move.to = { matches.captured(4).toInt(), matches.captured(5).toInt() };
 
         return move;
     }
@@ -56,7 +56,7 @@ void MainWindow::makeContainerGrid(QWidget *grid, int rows, int cols, const QSiz
     for(int r = 0; r < rows; r++){
         for(int c = 0; c < cols; c++){
             ContainerButton* currentContainer =
-                    new ContainerButton(QString::number(c) + " " + QString::number(r), r, c, ContainerButton::OCCUPIED, grid);
+                    new ContainerButton(QString::number(r) + " " + QString::number(c), r, c, ContainerButton::OCCUPIED, grid);
             connect(currentContainer, &ContainerButton::containerSelected, this, &MainWindow::containerSelected);
             connect(currentContainer, &ContainerButton::containerDeselected, this, &MainWindow::containerDeselected);
             QGridLayout* layout = (QGridLayout*) grid->layout();
@@ -81,24 +81,41 @@ void MainWindow::setStep(int next_step = 0) const{
     QModelIndex currentIndex = model->index(next_step, 0);
     ui->listView->selectionModel()->select(currentIndex, QItemSelectionModel::Select);
 }
+
+void MainWindow::MoveContainer(MoveInfo move) const{
+    ContainerButton* containerButton = GetContainerButton(move.from.col, move.from.row);
+    ContainerButton* newButton = GetContainerButton(move.to.col, move.to.row);
+    stringstream ss;
+    ss << move.from.col << " " << move.from.row;
+    containerButton->setText(QString::fromStdString(ss.str()));
+    containerButton->setState(ContainerButton::EMPTY);
+
+    newButton->setText(move.name);
+    newButton->setState(ContainerButton::OCCUPIED);
+}
 void MainWindow::on_nextButton_clicked()
 {
+    MoveInfo move = MoveInfo::Parse(model->stringList().at(current_step));
+    MoveContainer(move);
     current_step++;
-
+    Container prev = parser->getParseGrid()->getContainer(move.from.col, move.from.row);
+    parser->getParseGrid()->moveContainer(prev, move.to.col, move.to.row);
+    unloadContainer.erase(move.from);
     if(current_step == model->stringList().size()) {
+        unloadContainer.clear();
         ui->nextButton->setDisabled(true);
         ui->doneButton->setEnabled(true);
         return;
     }
+
+    move = MoveInfo::Parse(model->stringList().at(current_step));
     setStep(current_step);
-    DisplayNextMove();
+    DisplayNextMove(move);
 
 }
-void MainWindow::DisplayNextMove() const{
-    QString current_step_string = model->stringList().at(current_step);
-    qDebug() << current_step_string;
-    MoveInfo move = MoveInfo::Parse(current_step_string);
-    qDebug() << "Next move:" << move.name << "|" << move.from.col << move.from.row << "|" << move.to.col << move.to.row;
+void MainWindow::DisplayNextMove(MoveInfo move) const{
+    ContainerButton* nextPosition = GetContainerButton(move.to.col, move.to.row);
+    nextPosition->setState(ContainerButton::MOVING);
 }
 void MainWindow::Login(bool auth){
     ui->actionImport_Manifest->setEnabled(auth);
@@ -178,18 +195,23 @@ void MainWindow::on_actionLogout_triggered()
 void MainWindow::on_pushButton_clicked()
 {
     QStringList list;
-    if (unloadContainer.empty())
+    if (unloadContainer.empty()){
+        qDebug() << "No selection made";
         return;
-    // Get String List
-//    for(Position p : unloadContainer){
-//        list << QString::number(p.col) + " " + QString::number(p.row);
-//    }
-    list << "Cat: 1,2 -> 3,4";
-    list << "Dog: 3,4 -> 4,5";
+    }
+
+    vector<string> solution = Solve(parser->getParseGrid());
+
+    for(string s : solution){
+        QString currentString = QString::fromStdString(s);
+        qDebug() << currentString;
+        list << currentString;
+    }
     model->setStringList(list);
     current_step = 0;
+    MoveInfo move = MoveInfo::Parse(model->stringList().at(current_step));
     setStep(current_step);
-    DisplayNextMove();
+    DisplayNextMove(move);
     ui->pushButton->setDisabled(true);
 }
 

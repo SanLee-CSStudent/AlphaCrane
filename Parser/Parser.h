@@ -13,7 +13,6 @@
 class Parser {
 public:
     Parser() {
-        // if needed create new constructor for passed ContainerGrid/ContainerFactory object
         containerFactory = new ContainerFactory();
         grid = new ContainerGrid(8, 12);
     }

@@ -23,6 +23,8 @@ struct Position {
     int col;
     int row;
 };
+struct MoveInfo;
+
 struct PositionComp {
     bool operator() (const Position& p1, const Position& p2) const
     {
@@ -40,9 +42,12 @@ public:
 
   bool buttonFromShip(const ContainerButton *button) ;
 
-  void DisplayNextMove() const;
+  void DisplayNextMove(MoveInfo move) const;
 
   void setStep(int newStep) const;
+
+  void MoveContainer(MoveInfo move) const;
+
   ContainerButton* GetContainerButton (int col, int row) const;
 private slots:
   void on_nextButton_clicked();
@@ -74,6 +79,7 @@ private slots:
 private:
   void Login(bool auth);
   void makeContainerGrid(QWidget* grid, int row, int col, const QSize& buttonSize);
+
   Ui::MainWindow *ui;
   Dialog* loggin = nullptr;
   LoadContainer* loadcontainer = nullptr;
