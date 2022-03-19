@@ -3,44 +3,40 @@
 #define __BALANCE__
 
 #include "Node.h"
-#include <vector>
-#include <queue>
-#include <map>
 #include <chrono>
 #include <ctime>
+#include <map>
+#include <queue>
+#include <vector>
 
 using namespace std;
 
-struct nodeComparator
-{
-	bool operator()(Node* a, Node* b) const
-	{
-		return a->getMinuteCost() > b->getMinuteCost(); //changed from getCost to getMinuteCost
-	}
+struct nodeComparator {
+  bool operator()(Node *a, Node *b) const {
+    return a->getMinuteCost() >
+           b->getMinuteCost(); // changed from getCost to getMinuteCost
+  }
 };
 
-struct frontierComparator
-{
-	bool operator()(Node* a, Node* b) const
-	{
-		return a->getCost() > b->getCost(); //changed from getCost to getMinuteCost
-	}
+struct frontierComparator {
+  bool operator()(Node *a, Node *b) const {
+    return a->getCost() > b->getCost(); // changed from getCost to getMinuteCost
+  }
 };
 
-
-class Balance
-{
+class Balance {
 private:
-	Node* head;
-	priority_queue<Node*, vector<Node*>, frontierComparator> aStarFrontier;
-	map<Node*, int> exploredSet;
-	int maxQueueSize;
-	int numExplored;
+  Node *head;
+  priority_queue<Node *, vector<Node *>, frontierComparator> aStarFrontier;
+  map<Node *, int> exploredSet;
+  int maxQueueSize;
+  int numExplored;
+
 public:
-	Balance(Node* h);
-	Node* aStarSearch();
-	int getQueueSize();
-	int getNumExplored();
+  Balance(Node *h);
+  Node *aStarSearch(char mode);
+  int getQueueSize();
+  int getNumExplored();
 };
 
 #endif //__BALANCE__

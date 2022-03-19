@@ -68,7 +68,8 @@ bool MainWindow::buttonFromShip(const ContainerButton* button){
     return button->parentWidget() == ui->shipWidget;
 }
 void MainWindow::containerSelected(const ContainerButton* button){
-    Position p = {button->getCol(), button->getRow()};
+    Position p = {button->getRow(), button->getCol()};
+    qDebug() << "Adding" << button->getCol() << button->getRow() << button->text();
     unloadContainer.insert(p);
 }
 
@@ -199,9 +200,18 @@ void MainWindow::on_pushButton_clicked()
         qDebug() << "No selection made";
         return;
     }
-
-    vector<string> solution = Solve(parser->getParseGrid());
-
+    vector<Container> unload;
+    for(Position p : unloadContainer){
+        qDebug() << p.col << p.row;
+        Container c = parser->getParseGrid()->getContainer(p.col, p.row);
+        qDebug() << QString::fromStdString(c.name);
+        unload.push_back(c);
+    }
+    vector<string> solution = Unload(unload, parser->getParseGrid());
+    if(solution.empty()){
+        qDebug() << "no solution";
+        return;
+    }
     for(string s : solution){
         QString currentString = QString::fromStdString(s);
         qDebug() << currentString;

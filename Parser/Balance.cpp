@@ -19,7 +19,7 @@ int Balance::getQueueSize()
 	return this->maxQueueSize;
 }
 
-Node* Balance::aStarSearch()
+Node* Balance::aStarSearch(char mode)
 {
 	chrono::time_point<chrono::system_clock> startTime = chrono::system_clock::now();
 	Node* start = this->head;
@@ -31,7 +31,6 @@ Node* Balance::aStarSearch()
 	bool firstRun = true;
 	this->aStarFrontier.push(start);
 	priority_queue<Node*, vector<Node*>, nodeComparator> goalQueue;
-	int mode = 0;
 
 	while (this->aStarFrontier.size() > 0)
 	{
@@ -41,11 +40,10 @@ Node* Balance::aStarSearch()
 		{
 			if (goalQueue.empty())
 			{
-				cout << endl << "This ship is impossible to balance." << endl;
 				chrono::time_point<chrono::system_clock> endTime = chrono::system_clock::now();
 				chrono::duration<double> elapsed_seconds = endTime - startTime;
-				cout << "Total time spent trying: " << elapsed_seconds.count() << " seconds." << endl;
-				cout << "The system will now perform SIFT to balance the ship..." << endl << endl;
+                cout << "Total time spent trying: " << elapsed_seconds.count() << " seconds." << endl;
+                cout << "The system will now perform SIFT to balance the ship..." << endl << endl;
 				mode = 1;
 				this->exploredSet.clear();
 				while(aStarFrontier.size() > 0)
@@ -57,11 +55,10 @@ Node* Balance::aStarSearch()
 				this->head->calcSIFTCost();
 				this->aStarFrontier.push(this->head);
 				continue; //starts the loop over
-				//return nullptr; //exits the search if the queue size or number of nodes expanded is greater than 50000. This prevents an infinite search on impossible or extremely expensive cases.
 			}
 			else
 			{
-				cout << endl << "The ship has been balanced!" << endl;
+				cout << endl << "The goal state has been found!" << endl;
 				goalQueue.top()->getData()->print();
 				cout << endl << "The total minute cost was: " << +goalQueue.top()->getMinuteCost() << endl;
 				chrono::time_point<chrono::system_clock> endTime = chrono::system_clock::now();
@@ -81,15 +78,11 @@ Node* Balance::aStarSearch()
 
 		if (!(goalQueue.empty()) && goalQueue.top()->getDepth() < curr->getDepth()) //if there has been a goal found with a lower cost than the lowest cost node in the frontier (goalQueueCost < currCost??)
 		{
-			cout << "The current frontier contains no nodes with a lower cost than the current goal state." << endl;
-			cout << "Printing goal state..." << endl << endl;
-			goalQueue.top()->getData()->print();
 			cout << endl << "The total minute cost was: " << +goalQueue.top()->getMinuteCost() << endl;
 			chrono::time_point<chrono::system_clock> endTime = chrono::system_clock::now();
 			chrono::duration<double> elapsed_seconds = endTime - startTime;
 			cout << "The search took " << elapsed_seconds.count() << "seconds." << endl;
-			return goalQueue.top();
-			//break;
+ 			return goalQueue.top();
 		}
 
 		for (map<Node*, int>::iterator it = exploredSet.begin(); it != exploredSet.end(); ++it)
@@ -111,7 +104,7 @@ Node* Balance::aStarSearch()
 					}
 				}
 			}
-			if (!exploredAlready) //only checks buffer if already explored
+			if (exploredAlready) //only checks buffer if already explored
 			{
 				for (int column = 0; column < curr->getBuffer()->getColumn(); column++)
 				{
@@ -167,9 +160,16 @@ Node* Balance::aStarSearch()
 				{
 					curr->createSIFTChildren();
 				}
+				else if (mode == 2)
+				{
+					curr->createMovesChildren();
+				}
 				for (int i = 0; i < curr->getNumChildren(); i++) //add all the children to the frontier
 				{
+					cout  << endl << "child cost: " << +curr->getChild(i)->getCost() << " child Gcost:" << +curr->getChild(i)->getGCost() << " child Hcost: " << +curr->getChild(i)->getHCost() << endl;
 					this->aStarFrontier.push(curr->getChild(i));
+					cout << endl << "child ship: " << endl;
+					curr->getChild(i)->getData()->print();
 				}
 				if (aStarFrontier.size() > maxQueueSize)
 				{
@@ -188,9 +188,9 @@ Node* Balance::aStarSearch()
 	this->numExplored = numExplored;
 	if (!goalQueue.empty())
 	{
-		cout << endl << "The ship has been balanced!" << endl;
+		cout << endl << "The goal state has been found!" << endl;
 		goalQueue.top()->getData()->print();
-		cout << endl << "The total minute cost was: " << goalQueue.top()->getMinuteCost() << endl;
+		cout << endl << "The total minute cost was: " << +goalQueue.top()->getMinuteCost() << endl;
 		chrono::time_point<chrono::system_clock> endTime = chrono::system_clock::now();
 		chrono::duration<double> elapsed_seconds = endTime - startTime;
 		cout << "The search took " << elapsed_seconds.count() << "seconds." << endl;

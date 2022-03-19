@@ -14,4 +14,3 @@ project(AlphaCrane)
 add_subdirectory(Logger)
 add_subdirectory(Parser)
 add_subdirectory(GUI)
-
