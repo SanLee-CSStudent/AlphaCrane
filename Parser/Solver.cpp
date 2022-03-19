@@ -53,7 +53,7 @@ MoveInfo GetMoveInfo(Node *from, Node *to) {
   return mI;
 }
 
-vector<string> Unload(const vector<Container> &unload,
+vector<string> Unload(vector<Container> unload,
                       ContainerGrid *parserGrid) {
   ContainerGrid *testGrid = new ContainerGrid(8, 12);
   ContainerGrid *goalGrid = new ContainerGrid(8, 12);
@@ -70,10 +70,10 @@ vector<string> Unload(const vector<Container> &unload,
 
   Node *startNode =
       new Node(nullptr, parserGrid, goalGrid,
-               bufferGrid); // initialize blank goal state and buffer
-  startNode->setMoveContainers(vector<Container>(),
-                               unload); // for testing loading/unloading
-
+               bufferGrid);
+  vector<Container> notloading = {};
+  startNode->setMoveContainers(notloading,unload);
+  startNode->calcMovesCost();
   Balance *balance = new Balance(startNode);
   Node *solution = balance->aStarSearch(2); // for testing movement
   stack<Node *> trace;
@@ -85,7 +85,6 @@ vector<string> Unload(const vector<Container> &unload,
   trace.push(solution);
   vector<string> vec_string;
   stringstream ss;
-  std::cout << trace.size() << std::endl;
   while (trace.size() > 1) {
     Node *currentNode = trace.top();
     trace.pop();
@@ -97,11 +96,10 @@ vector<string> Unload(const vector<Container> &unload,
     vec_string.push_back(ss.str());
     ss.str("");
   }
-
   return vec_string;
 }
 
-vector<string> Load(const vector<Container> &load, ContainerGrid *parserGrid) {
+vector<string> Load(vector<Container> load, ContainerGrid *parserGrid) {
   ContainerGrid *testGrid = new ContainerGrid(8, 12);
   ContainerGrid *goalGrid = new ContainerGrid(8, 12);
   ContainerGrid *bufferGrid = new ContainerGrid(4, 24);
@@ -120,6 +118,7 @@ vector<string> Load(const vector<Container> &load, ContainerGrid *parserGrid) {
                bufferGrid); // initialize blank goal state and buffer
   startNode->setMoveContainers(
       load, vector<Container>()); // for testing loading/unloading
+  startNode->calcMovesCost();
 
   Balance *balance = new Balance(startNode);
   Node *solution = balance->aStarSearch(2); // for testing movement
@@ -130,7 +129,6 @@ vector<string> Load(const vector<Container> &load, ContainerGrid *parserGrid) {
     solution = solution->getParent();
   }
   trace.push(solution);
-  std::cout << trace.size() << std::endl;
   vector<string> vec_string;
   stringstream ss;
   while (trace.size() > 1) {
@@ -168,6 +166,8 @@ vector<string> Solve(ContainerGrid *parserGrid) {
   startNode->calcBalanceCost();
   Balance *balance = new Balance(startNode);
   Node *solution = balance->aStarSearch(0);
+
+
   stack<Node *> trace;
   while (solution->getParent() != nullptr) // fill trace stack
   {
@@ -178,6 +178,7 @@ vector<string> Solve(ContainerGrid *parserGrid) {
   trace.push(solution);
   vector<string> vec_string;
   stringstream ss;
+
   while (trace.size() > 1) {
     Node *currentNode = trace.top();
     trace.pop();

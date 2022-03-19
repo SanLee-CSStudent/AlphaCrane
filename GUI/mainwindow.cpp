@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QObject>
 #include <QStringList>
+#include <QDate>
 
 #include "containerbutton.h"
 #include "mainwindow.h"
@@ -30,6 +31,9 @@ MainWindow::MainWindow(QWidget *parent)
       on_actionLogin_triggered();
       ui->listView->setModel(model);
       setStep(0);
+}
+QString getDate(){
+    return QDateTime::currentDateTime().toString("MM DD YYYY: h:m:s ");
 }
 struct MoveInfo{
     QString name;
@@ -69,12 +73,11 @@ bool MainWindow::buttonFromShip(const ContainerButton* button){
 }
 void MainWindow::containerSelected(const ContainerButton* button){
     Position p = {button->getRow(), button->getCol()};
-    qDebug() << "Adding" << button->getCol() << button->getRow() << button->text();
     unloadContainer.insert(p);
 }
 
 void MainWindow::containerDeselected(const ContainerButton* button){
-    Position p = {button->getCol(), button->getRow()};
+    Position p = {button->getRow(), button->getCol()};
     unloadContainer.erase(p);
 }
 void MainWindow::setStep(int next_step = 0) const{
@@ -84,9 +87,17 @@ void MainWindow::setStep(int next_step = 0) const{
 }
 
 void MainWindow::MoveContainer(MoveInfo move) const{
+    stringstream ss;
+
+    if (move.from.col == move.to.col && move.from.row == move.to.row){
+        ContainerButton* containerButton = GetContainerButton(move.from.col, move.from.row);
+        ss << move.from.row << " " << move.from.col;
+        containerButton->setText(QString::fromStdString(ss.str()));
+        containerButton->setState(ContainerButton::EMPTY);
+        return;
+    }
     ContainerButton* containerButton = GetContainerButton(move.from.col, move.from.row);
     ContainerButton* newButton = GetContainerButton(move.to.col, move.to.row);
-    stringstream ss;
     ss << move.from.col << " " << move.from.row;
     containerButton->setText(QString::fromStdString(ss.str()));
     containerButton->setState(ContainerButton::EMPTY);
@@ -98,6 +109,7 @@ void MainWindow::on_nextButton_clicked()
 {
     MoveInfo move = MoveInfo::Parse(model->stringList().at(current_step));
     MoveContainer(move);
+    qDebug() << getDate() << model->stringList().at(current_step);
     current_step++;
     Container prev = parser->getParseGrid()->getContainer(move.from.col, move.from.row);
     parser->getParseGrid()->moveContainer(prev, move.to.col, move.to.row);
@@ -108,7 +120,6 @@ void MainWindow::on_nextButton_clicked()
         ui->doneButton->setEnabled(true);
         return;
     }
-
     move = MoveInfo::Parse(model->stringList().at(current_step));
     setStep(current_step);
     DisplayNextMove(move);
@@ -126,16 +137,35 @@ void MainWindow::Login(bool auth){
 }
 
 void MainWindow::acceptLoginDialog(const QString& username, const QString& password){
+    qDebug() << getDate() << username << " signs in";
     Login(true);
 }
 
 void MainWindow::acceptAnnotateDialog(const QString& annotation){
-    qDebug() << annotation;
+    qDebug() << getDate() << username << ": " << annotation;
 }
 
 void MainWindow::acceptLoadContainer(const QString & name, const QString & weight)
 {
-    qDebug() << name << " " << weight;
+    Container c = {weight.toInt(), name.toStdString() , {0, 0}};
+    vector<Container> load;
+    load.push_back(c);
+    vector<string> solution = Load(load, parser->getParseGrid());
+    if(solution.empty()) {
+        qDebug() << "no solution";
+        return;
+    }
+    QStringList list;
+    for(string s : solution){
+        QString currentString = QString::fromStdString(s);
+        list << currentString;
+    }
+    model->setStringList(list);
+    current_step = 0;
+    MoveInfo move = MoveInfo::Parse(model->stringList().at(current_step));
+    setStep(current_step);
+    DisplayNextMove(move);
+    ui->pushButton->setDisabled(true);
 }
 
 ContainerButton* MainWindow::GetContainerButton(int col, int row) const{
@@ -184,13 +214,22 @@ void MainWindow::on_actionImport_Manifest_triggered()
 void MainWindow::on_doneButton_clicked()
 {
     ui->pushButton->setEnabled(true);
+    ui->nextButton->setEnabled(true);
+    ui->actionBalance->setEnabled(true);
+    std::string outfile = "/home/thuanvu/" + ui->label->text().toStdString() + "_OUTBOUND.txt";
+
+    qDebug() << getDate() << "Finished a Cycle. Manifest " << QString::fromStdString(outfile) << "written to desktop" <<
+                "and a reminder pop-up to operator to send file was displayed.";
+
+    parser->createManifest(outfile);
     model->setStringList(QStringList());
-    QMessageBox::information(this, "REMINDER", "Please send manifest to ship!");
+    QMessageBox::information(this, "REMINDER", QString::fromStdString("Please send manifest to ship!\n" + outfile));
 }
 
 void MainWindow::on_actionLogout_triggered()
 {
     Login(false);
+    qDebug() << getDate() << loggin->username << " signs out";
 }
 
 void MainWindow::on_pushButton_clicked()
@@ -202,19 +241,16 @@ void MainWindow::on_pushButton_clicked()
     }
     vector<Container> unload;
     for(Position p : unloadContainer){
-        qDebug() << p.col << p.row;
         Container c = parser->getParseGrid()->getContainer(p.col, p.row);
-        qDebug() << QString::fromStdString(c.name);
         unload.push_back(c);
     }
     vector<string> solution = Unload(unload, parser->getParseGrid());
-    if(solution.empty()){
+    if(solution.empty()) {
         qDebug() << "no solution";
         return;
     }
     for(string s : solution){
         QString currentString = QString::fromStdString(s);
-        qDebug() << currentString;
         list << currentString;
     }
     model->setStringList(list);
@@ -262,5 +298,32 @@ void MainWindow::on_actionLoad_container_triggered()
                 &MainWindow::acceptLoadContainer);
     }
     loadcontainer->exec();
+}
+
+
+void MainWindow::on_actionBalance_triggered()
+{
+    QStringList list;
+
+    vector<Container> unload;
+
+    vector<string> solution = Solve(parser->getParseGrid());
+
+    if(solution.empty()){
+        qDebug() << "no solution";
+        return;
+    }
+
+    for(string s : solution){
+        QString currentString = QString::fromStdString(s);
+        qDebug() << currentString;
+        list << currentString;
+    }
+    model->setStringList(list);
+    current_step = 0;
+    MoveInfo move = MoveInfo::Parse(model->stringList().at(current_step));
+    setStep(current_step);
+    DisplayNextMove(move);
+    ui->actionBalance->setDisabled(true);
 }
 

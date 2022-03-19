@@ -5,7 +5,7 @@
 #include <vector>
 
 std::vector<std::string> Solve(ContainerGrid *);
-std::vector<std::string> Load(const std::vector<Container>&, ContainerGrid *);
-std::vector<std::string> Unload(const std::vector<Container>&, ContainerGrid *);
+std::vector<std::string> Load(std::vector<Container>, ContainerGrid *);
+std::vector<std::string> Unload(std::vector<Container>, ContainerGrid *);
 
 #endif

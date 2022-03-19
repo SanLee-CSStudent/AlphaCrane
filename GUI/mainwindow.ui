@@ -281,9 +281,10 @@
    </widget>
    <widget class="QMenu" name="menuLoad">
     <property name="title">
-     <string>Load</string>
+     <string>Actions</string>
     </property>
     <addaction name="actionLoad_container"/>
+    <addaction name="actionBalance"/>
    </widget>
    <addaction name="menuFIle"/>
    <addaction name="menuHelp"/>
@@ -327,6 +328,11 @@
   <action name="actionLoad_container">
    <property name="text">
     <string>Load container</string>
+   </property>
+  </action>
+  <action name="actionBalance">
+   <property name="text">
+    <string>Balance</string>
    </property>
   </action>
  </widget>

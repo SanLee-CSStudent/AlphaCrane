@@ -18,10 +18,10 @@ Dialog::~Dialog()
 
 void Dialog::on_buttonBox_accepted()
 {
-    QString username = ui->username->text();
+    username = ui->username->text();
     QString password = ui->password->text();
-//    ui->username->clear();
-//    ui->password->clear();
+    ui->username->clear();
+    ui->password->clear();
     emit Login(username, password);
 }
 

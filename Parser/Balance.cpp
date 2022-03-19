@@ -142,15 +142,10 @@ Node* Balance::aStarSearch(char mode)
 
 			if (sameArray == true)
 			{
-				cout << endl << "Found a goal node!" << endl;
-				curr->getData()->print();
-				cout << endl;
 				goalQueue.push(curr);
 			}
 			else
 			{
-				cout << endl << "Expanding this node which has a cost of: " << +curr->getCost() << " gCost of: "<< +curr->getGCost() << " hCost of: "  << +curr->getHCost() << endl;
-				curr->getData()->print();
 				numExplored++;
 				if (mode == 0)
 				{
@@ -166,10 +161,7 @@ Node* Balance::aStarSearch(char mode)
 				}
 				for (int i = 0; i < curr->getNumChildren(); i++) //add all the children to the frontier
 				{
-					cout  << endl << "child cost: " << +curr->getChild(i)->getCost() << " child Gcost:" << +curr->getChild(i)->getGCost() << " child Hcost: " << +curr->getChild(i)->getHCost() << endl;
 					this->aStarFrontier.push(curr->getChild(i));
-					cout << endl << "child ship: " << endl;
-					curr->getChild(i)->getData()->print();
 				}
 				if (aStarFrontier.size() > maxQueueSize)
 				{

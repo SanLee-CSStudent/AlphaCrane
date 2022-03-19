@@ -14,7 +14,7 @@ class Dialog : public QDialog
 public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
-
+    QString username;
 signals:
     void Login(const QString& username, const QString& password);
 

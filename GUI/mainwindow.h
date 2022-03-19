@@ -76,6 +76,8 @@ private slots:
 
   void on_actionLoad_container_triggered();
 
+  void on_actionBalance_triggered();
+
 private:
   void Login(bool auth);
   void makeContainerGrid(QWidget* grid, int row, int col, const QSize& buttonSize);
