@@ -21,7 +21,6 @@ Node::~Node()
 {
 	delete data;
 	this->data = NULL;
-	//delete goalState;
 	this->goalState = NULL;
 	delete buffer;
 	this->buffer = NULL;
@@ -47,6 +46,8 @@ Node::Node(Node* parent, ContainerGrid* data, ContainerGrid* goalState, Containe
 	{
 		this->depth = this->parent->getDepth() + 1;
 		this->minuteCost = parent->minuteCost;
+		this->loadContainers = this->parent->loadContainers;
+		this->unloadContainers = this->parent->unloadContainers;
 	}
 	else
 	{
@@ -102,7 +103,6 @@ void Node::createBalanceChildren() //create a Node* child for every possible mov
 		}
 	}
 
-	//this->generatePossibleBufferMoves();
 	this->unusedBufferLocations.push_back(this->getNearestBufferLoc());
 	this->generatePossibleShipMoves();
 	//loop through containers and add all of their possible moves
@@ -115,8 +115,6 @@ void Node::createBalanceChildren() //create a Node* child for every possible mov
 			{
 				continue;
 			}
-			//ContainerGrid* copiedData = copyData(this->data);
-			//ContainerGrid* copiedBuffer = copyData(this->buffer);
 			Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
 			unusedShipLoc = this->unusedShipLocations.at(j);
 			mDist = (abs(get<0>(unusedShipLoc) - get<0>(originalLoc)) + abs(get<1>(unusedShipLoc) - get<1>(originalLoc)));
@@ -131,8 +129,6 @@ void Node::createBalanceChildren() //create a Node* child for every possible mov
 			{
 				continue;
 			}
-			//ContainerGrid* copiedData = copyData(this->data);
-			//ContainerGrid* copiedBuffer = copyData(this->buffer);
 			Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
 			unusedBufferLoc = this->unusedBufferLocations.at(k);
 			tempBufferRDist = abs(get<1>(unusedBufferLoc) - 23); //only buffer R is reduced because the side with the large number is closest to the ship
@@ -156,8 +152,6 @@ void Node::createBalanceChildren() //create a Node* child for every possible mov
 			{
 				continue;
 			}
-			//ContainerGrid* copiedData = copyData(this->data);
-			//ContainerGrid* copiedBuffer = copyData(this->buffer);
 			Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
 			unusedBufferLoc = this->unusedBufferLocations.at(j);
 			mDist = (abs(get<0>(unusedBufferLoc) - get<0>(originalLoc)) + abs(get<1>(unusedBufferLoc) - get<1>(originalLoc)));
@@ -172,8 +166,6 @@ void Node::createBalanceChildren() //create a Node* child for every possible mov
 			{
 				continue;
 			}
-			//ContainerGrid* copiedData = copyData(this->data);
-			//ContainerGrid* copiedBuffer = copyData(this->buffer);
 			Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
 			unusedShipLoc = this->unusedShipLocations.at(k);
 			tempBufferRDist = abs(get<1>(unusedBufferLoc) - 23);
@@ -318,69 +310,77 @@ void Node::createMovesChildren()
 	tuple<char, char> unusedShipLoc;
 	tuple<char, char> unusedBufferLoc;
 	tuple<char, char> originalLoc;
-	char mDist; //for calculating the actual time cost
-
-	//doubles for storing the distance to travel to and from the pink virtual cell from each original location
 	char tempBufferRDist;
 	char tempBufferCDist;
 	char tempShipRDist;
 	char tempShipCDist;
-	//loop through containers and add all of their possible moves
-	for (char i = 0; i < containers.size(); i++) //iterate through containers that are within the ship and generate a child for every possible move
+	char mDist;
+	//move containers on top of containers to be unloaded first
+	for (int i = 0; i < this->unloadContainers.size(); i++)
 	{
-		originalLoc = make_tuple(containers.at(i).position.column, containers.at(i).position.row);
-		for (char j = 0; j < this->unusedShipLocations.size(); j++) //generate all moves to move within the ship
+		originalLoc = findShipContainer(unloadContainers.at(i));
+		if (this->data->getContainer(get<0>(originalLoc) - 1, get<1>(originalLoc)).name != "UNUSED")
 		{
-			Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
-			unusedShipLoc = this->unusedShipLocations.at(j);
-			mDist = (abs(get<0>(unusedShipLoc) - get<0>(originalLoc)) + abs(get<1>(unusedShipLoc) - get<1>(originalLoc)));
-			child->data->moveContainer(containers.at(i), get<0>(unusedShipLoc), get<1>(unusedShipLoc));
-			child->minuteCost += mDist;
-			child->calcSIFTCost();
-			this->children.push_back(child);
-		}
-		for (char k = 0; k < this->unusedBufferLocations.size(); k++) //generate all moves to move a container to the buffer
-		{
-			Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
-			unusedBufferLoc = this->unusedBufferLocations.at(k);
-			tempBufferRDist = abs(get<1>(unusedBufferLoc) - 23); //only buffer R is reduced because the side with the large number is closest to the ship
-			tempBufferCDist = get<0>(unusedBufferLoc);
-			tempShipRDist = get<1>(originalLoc);
-			tempShipCDist = get<0>(originalLoc);
-			mDist = 17 + tempBufferRDist + tempBufferCDist + tempShipRDist + tempShipCDist; //17 because 15 mins(flat time) plus 1 dist for virtual node, update later
-			child->transferContainer(true, unusedBufferLoc, originalLoc, containers.at(i));
-			child->minuteCost += mDist;
-			child->calcSIFTCost();
-			this->children.push_back(child);
+			for (int col = 0; col <= get<0>(originalLoc) - 1; col++)
+			{
+				if (this->data->getContainer(col, get<1>(originalLoc)).name != "UNUSED")
+				{
+					this->adjustContainers.push_back(this->data->getContainer(col, get<1>(originalLoc)));
+				}
+			}
 		}
 	}
-
-	for (char i = 0; i < bufferContainers.size(); i++) //generate all moves to move containers that are within the buffer and generate a child for every possible move
+	if (this->adjustContainers.size() != 0)
 	{
-		originalLoc = make_tuple(bufferContainers.at(i).position.column, bufferContainers.at(i).position.row);
-		for (char j = 0; j < this->unusedBufferLocations.size(); j++)
+		originalLoc = make_tuple(adjustContainers.at(0).position.column, adjustContainers.at(0).position.row);
+		Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
+		unusedShipLoc = this->adjustContainer(originalLoc); //searches for the nearest position to move the container
+		mDist = abs(get<0>(unusedShipLoc) - get<0>(originalLoc));
+		child->data->moveContainer(child->data->getContainer(get<0>(originalLoc), get<1>(originalLoc)), get<0>(unusedShipLoc), get<1>(unusedShipLoc));
+		child->calcMovesCost();
+		this->adjustContainers.erase(this->adjustContainers.begin());
+		this->addChild(child);
+	}
+	//unload first, then load
+	else
+	{
+		if (this->unloadContainers.size() != 0)
 		{
-			Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
-			unusedBufferLoc = this->unusedBufferLocations.at(j);
-			mDist = (abs(get<0>(unusedBufferLoc) - get<0>(originalLoc)) + abs(get<1>(unusedBufferLoc) - get<1>(originalLoc)));
-			child->buffer->moveContainer(bufferContainers.at(i), get<0>(unusedBufferLoc), get<1>(unusedBufferLoc));
-			child->minuteCost += mDist;
-			child->calcSIFTCost();
-			this->children.push_back(child);
+			for (int i = 0; i < this->unloadContainers.size(); i++)
+			{
+				originalLoc = findShipContainer(unloadContainers.at(i));
+				for (int j = 0; j < this->unusedBufferLocations.size(); j++)
+				{
+					Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
+					unusedBufferLoc = this->unusedBufferLocations.at(j);
+					tempBufferRDist = abs(get<1>(unusedBufferLoc) - 23); //only buffer R is reduced because the side with the large number is closest to the ship
+					tempBufferCDist = get<0>(unusedBufferLoc);
+					tempShipRDist = get<1>(originalLoc);
+					tempShipCDist = get<0>(originalLoc);
+					mDist = 17 + tempBufferRDist + tempBufferCDist + tempShipRDist + tempShipCDist; //17 because 15 mins(flat time) plus 1 dist for virtual node, update later
+					child->transferContainer(true, unusedBufferLoc, originalLoc, containers.at(i));					child->minuteCost += mDist;
+					child->calcMovesCost();
+					child->unloadContainers.erase(child->unloadContainers.begin() + j); //erases the moved container from child's loadContainers
+					this->children.push_back(child);
+				}
+			}
 		}
-		for (char k = 0; k < this->unusedShipLocations.size(); k++)
+		else
 		{
-			Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
-			unusedShipLoc = this->unusedShipLocations.at(k);
-			tempBufferRDist = abs(get<1>(unusedBufferLoc) - 23);
-			tempBufferCDist = get<0>(unusedBufferLoc);
-			tempShipRDist = get<1>(originalLoc);
-			tempShipCDist = get<0>(originalLoc);
-			mDist = 17 + tempBufferRDist + tempBufferCDist + tempShipRDist + tempShipCDist; //17 because 15 mins(flat time) plus 1 dist for virtual node, update later
-			child->transferContainer(false, unusedShipLoc, originalLoc, containers.at(i));
-			child->minuteCost += mDist;
-			child->calcSIFTCost();
-			this->children.push_back(child);
+			for (int i = 0; i < this->loadContainers.size(); i++)
+			{
+				for (int j = 0; j < this->unusedBufferLocations.size(); j++)
+				{
+					Node* child = new Node(this, copyData(this->data), copyData(this->goalState), copyData(this->buffer));
+					unusedShipLoc = this->unusedShipLocations.at(j);
+					mDist = 2 + get<0>(unusedShipLoc); //17 because 15 mins(flat time) plus 1 dist for virtual node, update later
+					child->data->addContainer(get<0>(unusedShipLoc), get<1>(unusedShipLoc), loadContainers.at(i)); //loaded container doesn't actually come from buffer?
+					child->minuteCost += mDist;
+					child->calcMovesCost();
+					child->loadContainers.erase(child->loadContainers.begin() + j); //erases the moved container from child's loadContainers
+					this->children.push_back(child);
+				}
+			}
 		}
 	}
 }
@@ -389,8 +389,6 @@ void Node::createSIFTGoal() //creates the goal state for when performing SIFT (F
 {
 	//create the goal state for SIFT
 	//obtain all containers in a vector, sort by weight, move them to their required locations, set Node's goalState to the modified ContainerGrid
-	// 
-	//ContainerGrid* siftGoal = new ContainerGrid(,);
 	vector<Container> containers;
 	for (char row = 0; row < this->data->getRow(); row++) //loop through containers and add all containers to a list
 	{
@@ -435,7 +433,6 @@ void Node::createSIFTGoal() //creates the goal state for when performing SIFT (F
 			row = (this->data->getRow() / 2) - 1;
 			modifier = 1;
 			continue; //goes up one column and returns to the middle row
-			//MAYBE ADD CHECKS HERE FOR BOUNDS ON ROW AND COL
 		}
 		if (goRight)
 		{
@@ -457,41 +454,6 @@ void Node::createSIFTGoal() //creates the goal state for when performing SIFT (F
 	cout << endl;
 }
 
-void Node::createMovesGoal(vector<Container> loadContainers, vector<Container> unloadContainers) //currently needs to be changed to match UI's input
-{
-	vector<Container> containers;
-	for (char row = 0; row < this->data->getRow(); row++) //loop through containers and add all containers to a list
-	{
-		for (char col = 0; col < this->data->getColumn(); col++)
-		{
-			if (this->data->getContainer(col, row).name != "NAN" && this->data->getContainer(col, row).name != "UNUSED")
-			{
-				containers.push_back(this->data->getContainer(col, row));
-			}
-		}
-	}
-	std::sort(containers.begin(), containers.end(), sortContainers); //sorts from heaviest to lightest
-
-	for (char col = 7; col >= 0; col--)//create the outline of the ship (only add NAN blocks, rest is unused)
-	{
-		for (char row = 11; row >= 0; row--)
-		{
-			if (this->data->getContainer(col, row).name == "NAN")
-			{
-				this->goalState->addContainer(col, row, this->data->getContainer(col, row));
-			}
-			else
-			{
-				Container unused = { 0, "UNUSED", {col, row} };
-				this->goalState->addContainer(col, row, unused);
-			}
-		}
-	}
-
-	//add containers to be moved loaded
-
-	//add containers to be unloaded
-}
 void Node::calcBalanceCost()
 {
 	int leftWeight = 0;
@@ -751,19 +713,56 @@ void Node::calcMovesCost()
 		}
 	}
 
-	for (char i = 0; i < containers.size(); i++)
+	bool foundContainer = false;
+	for (int i = 0; i < this->loadContainers.size(); i++)
 	{
-		originalLoc = make_tuple(containers.at(i).position.column, containers.at(i).position.row);
-		destinationLoc = findGoalContainer(containers.at(i));
-		tempHCost += (abs(get<0>(originalLoc) - get<0>(destinationLoc)) + abs(get<1>(originalLoc) - get<1>(destinationLoc)));
+		for (int row = 0; row < this->data->getRow(); row++)
+		{
+			for (int col = 0; col < this->data->getColumn(); col++)
+			{
+				if (this->data->getContainer(col, row).name == loadContainers.at(i).name && this->data->getContainer(col, row).weight == loadContainers.at(i).weight)
+				{
+					foundContainer = true;
+					break;
+				}
+			}
+			if (foundContainer == true)
+			{
+				break;
+			}
+		}
+		if (foundContainer == false)
+		{
+			tempHCost += 2 + get<0>(this->getNearestShipLoc());
+		}
 	}
 
-	for (char i = 0; i < bufferContainers.size(); i++)
+	tuple<char, char> foundLoc;
+	foundContainer = false;
+	for (int i = 0; i < this->unloadContainers.size(); i++)
 	{
-		originalLoc = make_tuple(bufferContainers.at(i).position.column, bufferContainers.at(i).position.column);
-		destinationLoc = findGoalContainer(containers.at(i));
-		tempHCost += 15 + abs(23 - get<1>(originalLoc)) + get<1>(destinationLoc); //15 + cost to top right of buffer + cost from top left of ship to destination ("ROWS" ONLY)
+		for (int row = 0; row < this->data->getRow(); row++)
+		{
+			for (int col = 0; col < this->data->getColumn(); col++)
+			{
+				if (this->data->getContainer(col, row).name == unloadContainers.at(i).name)
+				{
+					foundContainer = true;
+					foundLoc = make_tuple(col, row);
+					break;
+				}
+			}
+			if (foundContainer == true)
+			{
+				break;
+			}
+		}
+		if (foundContainer == true)
+		{
+			tempHCost += (15 + get<0>(foundLoc) + get<0>(this->getNearestBufferLoc()));
+		}
 	}
+
 
 	//hCost is summation of containers' column distances to destination
 	this->hCost = tempHCost;
@@ -862,6 +861,20 @@ tuple<char, char> Node::getNearestBufferLoc() //checks for nearest buffer loc
 	return make_tuple(-1, -1);
 }
 
+tuple<char, char> Node::getNearestShipLoc()
+{
+	for (char row = 0; row < this->data->getRow(); row++)
+	{
+		for (char col = 0; col < this->data->getColumn(); col++)
+		{
+			if (this->data->getContainer(col, row).name == "UNUSED" && (col == 3 || this->data->getContainer(col + 1, row).name != "UNUSED"))
+			{
+				return make_tuple(col, row);
+			}
+		}
+	}
+}
+
 void Node::generatePossibleShipMoves()
 {
 	for (char row = 0; row < this->data->getRow(); row++) //loop through ship grid and add moveable containers to a list
@@ -952,7 +965,6 @@ ContainerGrid* Node::getBuffer()
 
 ContainerGrid* Node::copyData(ContainerGrid* data)
 {
-	//cout << endl << "Getcolumn returns: " << data->getColumn() << " Getrow returns: " << data->getRow() << endl;
 	ContainerGrid* newData = new ContainerGrid(data->getColumn(), data->getRow());
 	for (char column = 0; column < data->getColumn(); column++)
 	{
@@ -983,16 +995,56 @@ tuple<char, char> Node::findGoalContainer(Container c)
 
 void Node::clearChildren()
 {
-	/*
-	for(int i = 0; i < this->children.size(); i++)
-	{
-		if (this->children.at(i)->getHCost() > 0)
-		{
-			delete this->children.at(i);
-			this->children.at(i) = NULL;
-		}
-
-	}
-	*/
 	this->children.clear();
+}
+
+void Node::setMoveContainers(vector<Container> loadContainers, vector<Container> unloadContainers)
+{
+	this->loadContainers = loadContainers;
+	this->unloadContainers = unloadContainers;
+}
+
+tuple<char, char> Node::findShipContainer(Container c)
+{
+	for(char col = 7; col >= 0; col--)
+	{
+		for (char row = 11; row >= 0; row--)
+		{
+			if (this->data->getContainer(col, row).name == c.name)
+			{
+				return make_tuple(col, row);
+			}
+		}
+	}
+}
+
+tuple<char, char> Node::findBufferContainer(Container c)
+{
+	for (char col = 3; col >= 0; col--)
+	{
+		for (char row = 23; row >= 0; row--)
+		{
+			if (this->buffer->getContainer(col, row).name == c.name)
+			{
+				return make_tuple(col, row);
+			}
+		}
+	}
+}
+
+tuple<char, char> Node::adjustContainer(tuple<char, char> originalLoc)
+{
+	this->generatePossibleShipMoves();
+	char mDist = 126;
+	tuple<char, char> tempLoc = originalLoc;
+	for (int i = 0; i < unusedShipLocations.size(); i++)
+	{
+		if (((abs(get<0>(originalLoc) - get<0>(unusedShipLocations.at(i))) + abs(get<1>(unusedShipLocations.at(i)) - get<1>(originalLoc))) < mDist) && (get<0>(unusedShipLocations.at(i))+1 != get<0>(originalLoc) && get<1>(unusedShipLocations.at(i)) != get<1>(originalLoc)))
+		{
+			mDist = ((abs(get<0>(originalLoc) - get<0>(unusedShipLocations.at(i))) + abs(get<1>(unusedShipLocations.at(i)) - get<1>(originalLoc))));
+			tempLoc = unusedShipLocations.at(i);
+		}
+	}
+
+	return tempLoc;
 }

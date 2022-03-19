@@ -4,9 +4,9 @@
 #include <stack>
 #include "Node.h"
 #include "Balance.h"
-#include "../Parser/Container.h"
-#include "../Parser/ContainerGrid.h"
-#include "../Parser/parser.h"
+#include "Container.h"
+#include "ContainerGrid.h"
+#include "parser.h"
 using namespace std;
 
 
@@ -25,20 +25,32 @@ int main()
 		}
 	}
 
+	vector<Container> unloadContainers;
+	vector<Container> loadContainers;
+	Container nat = { 153, "Nat", {0,0} };
+	Container rat = { 2351, "Rat", {0,0} };
+	loadContainers.push_back(nat);
+	loadContainers.push_back(rat);
+	Container hen = { 0, "Hen", {0,0} };
+	Container pig = { 0, "Pig", {0,0} };
+	unloadContainers.push_back(hen);
+	unloadContainers.push_back(pig);
+	
 	Parser parser = Parser(testGrid);
-	string file = "C:\\Users\\amidd\\source\\repos\\Balance Algorithm CS179\\Balance Algorithm CS179\\ShipCase1.txt";
+	string file = "C:\\Users\\amidd\\source\\repos\\Balance Algorithm CS179\\Balance Algorithm CS179\\ShipCase5.txt";
 	parser.parse(file);
 
-
 	Node* startNode = new Node(nullptr, parser.getParseGrid(), goalGrid, bufferGrid); //initialize blank goal state and buffer
+	startNode->setMoveContainers(loadContainers, unloadContainers); //for testing loading/unloading
 	cout << "We are asked to balance the following ship: " << endl;
 	startNode->getData()->print();
 	cout << endl << endl;
-	startNode->calcBalanceCost();
+
+	startNode->calcMovesCost();
 	cout << endl << "startNode size is: " << sizeof(startNode) << endl;
-	cout << "It has a starting cost of: " << startNode->getCost() << " with an gCost of: " << startNode->getGCost() << " and an hCost of: " << startNode->getHCost() << endl;
+	cout << "It has a starting cost of: " << +startNode->getCost() << " with an gCost of: " << +startNode->getGCost() << " and an hCost of: " << +startNode->getHCost() << endl;
 	Balance* balance = new Balance(startNode);
-	Node* solution = balance->aStarSearch();
+	Node* solution = balance->aStarSearch(2); //for testing movement
 	stack<Node*> trace;
 	while (solution->getParent() != nullptr) //fill trace stack
 	{

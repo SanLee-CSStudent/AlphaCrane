@@ -38,7 +38,7 @@ private:
 	int numExplored;
 public:
 	Balance(Node* h);
-	Node* aStarSearch();
+	Node* aStarSearch(char mode);
 	int getQueueSize();
 	int getNumExplored();
 };
