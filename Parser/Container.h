@@ -4,7 +4,7 @@
 #include <string>
 #include "Point.h"
 
-struct Container{
+struct Container {
     int weight;
     std::string name;
     Point position;
